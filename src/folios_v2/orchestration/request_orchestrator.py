@@ -23,6 +23,8 @@ from folios_v2.persistence import UnitOfWork
 from folios_v2.providers import ProviderRegistry
 from folios_v2.utils import ensure_utc
 
+from .prompt_builder import build_research_prompt
+
 UnitOfWorkFactory = Callable[[], UnitOfWork]
 
 
@@ -55,11 +57,14 @@ class RequestOrchestrator:
         task_id = TaskId(uuid4())
         scheduled_ts = ensure_utc(scheduled_for) if scheduled_for else None
 
+        prompt = build_research_prompt(strategy, mode=mode)
+
         base_metadata = {
             "strategy_name": strategy.name,
             "provider": provider_id.value,
             "request_type": request_type.value,
-            "strategy_prompt": strategy.prompt,
+            "strategy_prompt": prompt,
+            "output_schema": "investment_analysis_v1",
         }
         if metadata is not None:
             base_metadata.update(metadata)

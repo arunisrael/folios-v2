@@ -121,7 +121,10 @@ def test_request_orchestrator_creates_request_and_task(tmp_path: Path) -> None:
 
     assert request.provider_id == ProviderId.OPENAI
     assert task.request_id == request.id
-    assert request.metadata["strategy_prompt"] == "prompt"
+    enriched_prompt = request.metadata["strategy_prompt"]
+    assert enriched_prompt.startswith("prompt")
+    assert "Recency requirements" in enriched_prompt
+    assert request.metadata["output_schema"] == "investment_analysis_v1"
 
     async def _lookup() -> None:
         async with uow as session:

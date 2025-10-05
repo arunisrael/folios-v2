@@ -105,6 +105,16 @@ class LocalJSONParser(ResultParser):
             stdout_path = Path(ctx.task.stdout_path)
             return {"raw_text": stdout_path.read_text(encoding="utf-8")}
 
+        structured_path = ctx.artifact_dir / "structured.json"
+        if structured_path.exists():
+            try:
+                structured: dict[str, Any] = json.loads(
+                    structured_path.read_text(encoding="utf-8")
+                )
+                return structured
+            except json.JSONDecodeError as exc:
+                raise ParseError(f"Invalid structured JSON output: {exc}") from exc
+
         response_path = ctx.artifact_dir / self._response_filename
         if not response_path.exists():
             raise ParseError(f"Expected response file at {response_path}")
@@ -112,6 +122,9 @@ class LocalJSONParser(ResultParser):
             data: dict[str, Any] = json.loads(
                 response_path.read_text(encoding="utf-8")
             )
+            structured = data.get("structured") if isinstance(data, dict) else None
+            if isinstance(structured, dict):
+                return structured
             return data
         except json.JSONDecodeError as exc:
             raise ParseError(f"Invalid JSON output: {exc}") from exc
