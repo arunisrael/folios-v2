@@ -8,12 +8,9 @@ from uuid import uuid4
 
 from folios_v2.domain import (
     ExecutionMode,
+    ExecutionTask,
     LifecycleState,
-    Order,
-    OrderAction,
-    PortfolioAccount,
-    Position,
-    PositionSide,
+    ProviderId,
     Request,
     RequestPriority,
     RequestType,
@@ -21,7 +18,7 @@ from folios_v2.domain import (
     StrategyId,
     StrategyStatus,
 )
-from folios_v2.domain.enums import ProviderId
+from folios_v2.domain.trading import Order, OrderAction, PortfolioAccount, Position, PositionSide
 from folios_v2.domain.types import OrderId, PositionId, RequestId
 from folios_v2.persistence.sqlite import create_sqlite_unit_of_work_factory
 
@@ -124,7 +121,7 @@ def test_sqlite_portfolio_position_order(tmp_path: Path) -> None:
     assert orders and orders[0].symbol == "GOOG"
 
 
-def test_sqlite_requests_and_tasks(tmp_path: Path) -> None:
+def test_sqlite_requests_tasks_and_logs(tmp_path: Path) -> None:
     factory = create_sqlite_unit_of_work_factory(_db_url(tmp_path))
     strategy = Strategy(
         id=StrategyId(uuid4()),
@@ -144,20 +141,47 @@ def test_sqlite_requests_and_tasks(tmp_path: Path) -> None:
         scheduled_for=datetime.now(UTC),
         metadata={"k": "v"},
     )
+    task = ExecutionTask(
+        id=uuid4(),
+        request_id=request.id,
+        sequence=1,
+        mode=ExecutionMode.CLI,
+        lifecycle_state=LifecycleState.SCHEDULED,
+    )
 
     async def _store() -> None:
         async with factory() as uow:
             await uow.strategy_repository.upsert(strategy)
             await uow.request_repository.add(request)
+            await uow.task_repository.add(task)
+            await uow.log_repository.add(
+                {
+                    "request_id": str(request.id),
+                    "task_id": str(task.id),
+                    "previous_state": LifecycleState.PENDING.value,
+                    "next_state": LifecycleState.SCHEDULED.value,
+                    "created_at": datetime.now(UTC),
+                    "attributes": {"note": "initial"},
+                }
+            )
             await uow.commit()
 
     asyncio.run(_store())
 
-    async def _load() -> Request | None:
+    async def _transition() -> tuple[Request | None, int]:
         async with factory() as uow:
-            pending = await uow.request_repository.list_pending(limit=5)
-            return pending[0] if pending else None
+            updated = request.model_copy(
+                update={
+                    "lifecycle_state": LifecycleState.SUCCEEDED,
+                    "completed_at": datetime.now(UTC),
+                }
+            )
+            await uow.request_repository.update(updated)
+            logs = await uow.log_repository.list_for_request(request.id)
+            await uow.commit()
+            return await uow.request_repository.get(request.id), len(logs)
 
-    loaded = asyncio.run(_load())
-    assert loaded is not None
-    assert loaded.metadata["k"] == "v"
+    updated_request, log_count = asyncio.run(_transition())
+    assert updated_request is not None
+    assert updated_request.lifecycle_state is LifecycleState.SUCCEEDED
+    assert log_count == 1
