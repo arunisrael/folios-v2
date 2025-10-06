@@ -22,6 +22,7 @@ def test_build_container_registers_providers(tmp_path: Path) -> None:
     assert (tmp_path / "artifacts").exists()
     providers = {plugin.provider_id for plugin in container.provider_registry.list_plugins()}
     assert providers == {ProviderId.OPENAI, ProviderId.GEMINI, ProviderId.ANTHROPIC}
+    assert container.screener_service.available_providers() == ()
 
     async def _round_trip() -> int:
         async with container.unit_of_work_factory() as uow:

@@ -6,3 +6,9 @@ __pycache__/
 .venv/
 .coverage
 
+
+# Local secrets and artifacts
+.env
+artifacts/
+final_recommendations.json
+folios_v2.db

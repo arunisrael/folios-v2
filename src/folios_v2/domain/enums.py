@@ -14,6 +14,13 @@ class ProviderId(StrEnum):
     CUSTOM = "custom"
 
 
+class ScreenerProviderId(StrEnum):
+    """Identifiers for supported market data screeners."""
+
+    FINNHUB = "finnhub"
+    FMP = "fmp"
+
+
 class ExecutionMode(StrEnum):
     """Execution channels available for provider interactions."""
 

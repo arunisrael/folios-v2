@@ -98,11 +98,19 @@ def _risk_constraints_block(risk_controls: RiskControls | None) -> str:
     return "\n\nRisk constraints (must follow):\n" + joined
 
 
+def _candidates_block(candidates: tuple[str, ...] | None) -> str:
+    if not candidates:
+        return ""
+    formatted = "\n".join(f"- {ticker}" for ticker in candidates)
+    return "\n\nScreened ticker candidates (latest refresh):\n" + formatted
+
+
 def build_research_prompt(
     strategy: Strategy,
     *,
     mode: ExecutionMode,
     market_context: str | None = None,
+    screener_candidates: tuple[str, ...] | None = None,
 ) -> str:
     """Compose the full research prompt for a strategy and execution mode."""
 
@@ -117,6 +125,7 @@ def build_research_prompt(
         + _RECENCY_BLOCK
         + _COMPLIANCE_BLOCK
         + _risk_constraints_block(strategy.risk_controls)
+        + _candidates_block(screener_candidates)
     )
 
     if mode is ExecutionMode.CLI:

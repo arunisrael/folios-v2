@@ -21,8 +21,9 @@ from folios_v2.domain import (
     Strategy,
     StrategyMetadata,
     StrategySchedule,
+    StrategyScreener,
 )
-from folios_v2.domain.enums import ExecutionMode, ProviderId, StrategyStatus
+from folios_v2.domain.enums import ExecutionMode, ProviderId, ScreenerProviderId, StrategyStatus
 from folios_v2.domain.types import StrategyId
 from folios_v2.persistence.sqlite import create_sqlite_unit_of_work_factory
 from folios_v2.utils import ensure_utc
@@ -43,7 +44,7 @@ def _clean_text(value: object) -> str | None:
 
 def _load_legacy_rows(source: Path, limit: int | None) -> list[dict[str, Any]]:
     query = (
-        "select id, name, prompt, tickers, risk_controls, metadata, schedule, "
+        "select id, name, prompt, tickers, risk_controls, metadata, schedule, screener, "
         "options_enabled, short_enabled, is_active, created_at, updated_at "
         "from strategies order by created_at asc"
     )
@@ -80,6 +81,49 @@ def _parse_risk_controls(raw: str | None) -> RiskControls | None:
 
     rc_kwargs["borrow_available"] = data.get("borrow_available")
     return RiskControls(**rc_kwargs)
+
+
+def _parse_screener(raw: str | None) -> StrategyScreener | None:
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
+
+    provider_token = (data.get("provider") or "").strip().lower()
+    if not provider_token:
+        return None
+    try:
+        provider = ScreenerProviderId(provider_token)
+    except ValueError:
+        return None
+
+    filters_raw = data.get("filters")
+    filters = filters_raw if isinstance(filters_raw, dict) else {}
+    limit_value = data.get("limit")
+    try:
+        limit = int(limit_value) if limit_value is not None else 25
+    except (TypeError, ValueError):
+        limit = 25
+
+    universe_cap_value = data.get("universe_cap")
+    try:
+        universe_cap = int(universe_cap_value) if universe_cap_value is not None else None
+    except (TypeError, ValueError):
+        universe_cap = None
+
+    enabled = bool(data.get("enabled", True))
+
+    return StrategyScreener(
+        provider=provider,
+        filters=filters,
+        limit=limit,
+        enabled=enabled,
+        universe_cap=universe_cap,
+    )
 
 
 def _resolve_weekday(token: str, legacy_id: str) -> int:
@@ -168,6 +212,7 @@ def _transform_row(row: dict[str, Any]) -> tuple[Strategy, StrategySchedule]:
     tickers = tuple(str(ticker).strip() for ticker in tickers_raw if str(ticker).strip())
 
     risk_controls = _parse_risk_controls(row.get("risk_controls"))
+    screener = _parse_screener(row.get("screener"))
     metadata = _parse_metadata(row, legacy_id)
     weekday, research_time = _parse_schedule((row.get("schedule") or "").strip(), legacy_id)
 
@@ -191,6 +236,7 @@ def _transform_row(row: dict[str, Any]) -> tuple[Strategy, StrategySchedule]:
         metadata=metadata,
         preferred_providers=(preferred,),
         active_modes=(ExecutionMode.BATCH, ExecutionMode.CLI),
+        screener=screener,
         research_day=weekday,
         research_time_utc=research_time,
         runtime_weight=1.0,

@@ -3,13 +3,19 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, time
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
 from pydantic import Field, field_validator
 
 from .base import DomainModel
-from .enums import ExecutionMode, ProviderId, StrategyRunStatus, StrategyStatus
+from .enums import (
+    ExecutionMode,
+    ProviderId,
+    ScreenerProviderId,
+    StrategyRunStatus,
+    StrategyStatus,
+)
 from .types import IsoWeek, RunId, StrategyId
 
 
@@ -56,6 +62,26 @@ class ProviderPreference(DomainModel):
         return value
 
 
+class StrategyScreener(DomainModel):
+    """Optional screener configuration attached to a strategy."""
+
+    provider: ScreenerProviderId
+    filters: dict[str, Any] = Field(default_factory=dict)
+    limit: Annotated[int, Field(ge=1, le=500)] = 25
+    enabled: bool = True
+    universe_cap: Annotated[int | None, Field(ge=1, le=10_000)] = None
+
+    @field_validator("filters", mode="before")
+    @classmethod
+    def normalize_filters(cls, value: object) -> dict[str, Any]:
+        if value is None:
+            return {}
+        if isinstance(value, dict):
+            return {str(key): val for key, val in value.items() if key is not None}
+        msg = "Screener filters must be a mapping"
+        raise TypeError(msg)
+
+
 class Strategy(DomainModel):
     """Primary strategy definition stored in SQLite."""
 
@@ -68,6 +94,7 @@ class Strategy(DomainModel):
     metadata: StrategyMetadata | None = None
     preferred_providers: tuple[ProviderPreference, ...] = ()
     active_modes: tuple[ExecutionMode, ...] = (ExecutionMode.BATCH,)
+    screener: StrategyScreener | None = None
     research_day: Annotated[int, Field(ge=1, le=5)] = 4  # default Thursday
     research_time_utc: time | None = None
     runtime_weight: Annotated[float, Field(gt=0.0)] = 1.0

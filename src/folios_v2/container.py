@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,8 +17,13 @@ from folios_v2.providers.gemini import GEMINI_PLUGIN
 from folios_v2.providers.openai import OPENAI_PLUGIN
 from folios_v2.runtime import BatchRuntime, CliRuntime
 from folios_v2.scheduling import HolidayCalendar, WeekdayLoadBalancer
+from folios_v2.screeners import ScreenerError, ScreenerService
+from folios_v2.screeners.providers import FMPScreener, FinnhubScreener
 
 UnitOfWorkFactory = Callable[[], UnitOfWork]
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(slots=True)
@@ -26,6 +32,7 @@ class ServiceContainer:
 
     settings: AppSettings
     provider_registry: ProviderRegistry
+    screener_service: ScreenerService
     unit_of_work_factory: UnitOfWorkFactory
     load_balancer: WeekdayLoadBalancer
     holiday_calendar: HolidayCalendar
@@ -59,6 +66,24 @@ def build_container(settings: AppSettings | None = None) -> ServiceContainer:
     registry.register(GEMINI_PLUGIN, override=True)
     registry.register(ANTHROPIC_PLUGIN, override=True)
 
+    screener_service = ScreenerService()
+    if resolved_settings.finnhub_api_key:
+        try:
+            screener_service.register(
+                FinnhubScreener(token=resolved_settings.finnhub_api_key),
+                override=True,
+            )
+        except ScreenerError as exc:  # pragma: no cover - defensive path
+            logger.warning("Unable to register Finnhub screener: %s", exc)
+    if resolved_settings.fmp_api_key:
+        try:
+            screener_service.register(
+                FMPScreener(token=resolved_settings.fmp_api_key),
+                override=True,
+            )
+        except ScreenerError as exc:  # pragma: no cover - defensive path
+            logger.warning("Unable to register FMP screener: %s", exc)
+
     _ensure_sqlite_directory(resolved_settings.database_url)
     unit_of_work_factory = create_sqlite_unit_of_work_factory(resolved_settings.database_url)
     load_balancer = WeekdayLoadBalancer()
@@ -73,6 +98,8 @@ def build_container(settings: AppSettings | None = None) -> ServiceContainer:
         unit_of_work_factory,
         registry,
         artifacts_root,
+        screener_service=screener_service,
+        logger=logger,
     )
     lifecycle_engine = LifecycleEngine(unit_of_work_factory)
     batch_runtime = BatchRuntime()
@@ -81,6 +108,7 @@ def build_container(settings: AppSettings | None = None) -> ServiceContainer:
     return ServiceContainer(
         settings=resolved_settings,
         provider_registry=registry,
+        screener_service=screener_service,
         unit_of_work_factory=unit_of_work_factory,
         load_balancer=load_balancer,
         holiday_calendar=holiday_calendar,

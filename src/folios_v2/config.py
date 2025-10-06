@@ -15,6 +15,8 @@ class AppSettings:
     database_url: str = "sqlite+aiosqlite:///folios_v2.db"
     artifacts_root: Path = Path("artifacts")
     timezone: str = "UTC"
+    finnhub_api_key: str | None = None
+    fmp_api_key: str | None = None
 
     @classmethod
     def from_env(cls) -> AppSettings:
@@ -23,6 +25,8 @@ class AppSettings:
             database_url=os.getenv("FOLIOS_DATABASE_URL", cls.database_url),
             artifacts_root=Path(os.getenv("FOLIOS_ARTIFACTS_ROOT", str(cls.artifacts_root))),
             timezone=os.getenv("FOLIOS_TIMEZONE", cls.timezone),
+            finnhub_api_key=os.getenv("FINNHUB_API_KEY") or None,
+            fmp_api_key=os.getenv("FMP_API_KEY") or None,
         )
 
 

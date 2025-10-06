@@ -19,6 +19,7 @@ class CodexCliExecutor(CliExecutor):
 
     base_command: Sequence[str] = (
         "codex",
+        "--search",
         "exec",
         "--json",
         "--skip-git-repo-check",
