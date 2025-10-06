@@ -29,7 +29,7 @@ class ScreenerResult(DomainModel):
         *,
         provider: ScreenerProviderId,
         filters: dict[str, Any] | None = None,
-    ) -> "ScreenerResult":
+    ) -> ScreenerResult:
         return cls(provider=provider, filters=filters or {})
 
 

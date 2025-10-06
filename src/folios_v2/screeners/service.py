@@ -61,7 +61,7 @@ class ScreenerService:
             )
         except ScreenerError:
             raise
-        except Exception as exc:  # noqa: BLE001 - surface provider failure context
+        except Exception as exc:
             msg = f"Screener provider {config.provider} failed"
             raise ScreenerError(msg) from exc
 

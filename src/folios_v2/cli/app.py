@@ -184,13 +184,13 @@ def screener_run(
         strategy_after, config_used, result, tickers_changed = asyncio.run(_run())
     except LookupError as exc:
         typer.echo(str(exc))
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from exc
     except ValueError as exc:
         typer.echo(str(exc))
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from exc
     except ScreenerError as exc:
         typer.echo(f"Screener execution failed: {exc}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from exc
 
     candidates = ", ".join(result.symbols) if result.symbols else "(none)"
     typer.echo(f"Provider: {result.provider.value}")

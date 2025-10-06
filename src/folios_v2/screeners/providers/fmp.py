@@ -122,7 +122,7 @@ class FMPScreener(ScreenerProvider):
         params: dict[str, Any],
         *,
         suppress: bool = False,
-    ) -> Any:
+    ) -> object:
         query = dict(params)
         query["apikey"] = self._token
         url = f"{self.API_BASE}{path}"
@@ -135,7 +135,7 @@ class FMPScreener(ScreenerProvider):
                 return []
             msg = f"FMP request failed with status {exc.response.status_code}"
             raise ScreenerError(msg) from exc
-        except httpx.HTTPError as exc:  # noqa: PERF203
+        except httpx.HTTPError as exc:
             if suppress:
                 return []
             msg = "FMP request failed"

@@ -20,8 +20,8 @@ from folios_v2.domain import (
 from folios_v2.orchestration import RequestOrchestrator, StrategyCoordinator
 from folios_v2.persistence import InMemoryUnitOfWork, UnitOfWork
 from folios_v2.providers import ProviderPlugin, ProviderRegistry, ProviderThrottle, ResultParser
-from folios_v2.screeners import ScreenerResult, ScreenerService
 from folios_v2.scheduling import HolidayCalendar, WeekdayLoadBalancer
+from folios_v2.screeners import ScreenerResult, ScreenerService
 
 
 class DummyParser(ResultParser):

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import importlib
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -9,9 +10,6 @@ from uuid import uuid4
 import pytest
 from typer.testing import CliRunner
 
-from importlib import import_module
-
-app_module = import_module("folios_v2.cli.app")
 from folios_v2.cli.app import app
 from folios_v2.cli.deps import reset_container
 from folios_v2.domain import (
@@ -24,6 +22,7 @@ from folios_v2.domain import (
 from folios_v2.persistence import InMemoryUnitOfWork
 from folios_v2.screeners import ScreenerResult, ScreenerService
 
+app_module = importlib.import_module("folios_v2.cli.app")
 
 def _env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     db_url = f"sqlite+aiosqlite:///{tmp_path/'cli.db'}"

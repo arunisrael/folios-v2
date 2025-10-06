@@ -32,8 +32,8 @@ class AppSettings:
     openai_api_base: str = "https://api.openai.com"
     openai_completion_window: str = "24h"
     openai_batch_system_message: str = (
-        "You are a research analyst returning JSON that conforms to the investment_analysis_v1 schema. "
-        "Respond with valid JSON only."
+        "You are a research analyst returning JSON that conforms to the "
+        "investment_analysis_v1 schema. Respond with valid JSON only."
     )
     gemini_batch_model: str = "gemini-2.5-pro"
 

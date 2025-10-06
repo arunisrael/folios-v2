@@ -59,11 +59,15 @@ INVESTMENT_ANALYSIS_SCHEMA = {
                             "type": "integer",
                             "minimum": 0,
                             "maximum": 100,
-                            "description": "Confidence level for this specific recommendation (0-100)",
+                            "description": (
+                                "Confidence level for this specific recommendation (0-100)"
+                            ),
                         },
                         "investment_thesis": {
                             "type": "string",
-                            "description": "2-3 sentence investment thesis explaining the recommendation",
+                            "description": (
+                                "2-3 sentence investment thesis explaining the recommendation"
+                            ),
                         },
                         "key_metrics": {
                             "type": "object",
@@ -133,7 +137,9 @@ INVESTMENT_ANALYSIS_SCHEMA = {
                         "type": "number",
                         "minimum": 0,
                         "maximum": 100,
-                        "description": "Total recommended allocation percentage for all recommendations",
+                        "description": (
+                            "Total recommended allocation percentage for all recommendations"
+                        ),
                     },
                     "diversification_notes": {
                         "type": "string",

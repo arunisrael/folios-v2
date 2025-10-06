@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import pytest
-
 import asyncio
 import json
 from pathlib import Path
 from uuid import uuid4
+
+import pytest
 
 from folios_v2.domain import (
     ExecutionMode,
@@ -46,7 +46,7 @@ def test_build_openai_plugin_requires_key_when_fallback_disabled() -> None:
         build_openai_plugin(cfg)
 
 
-def test_openai_serializer_includes_investment_schema(tmp_path) -> None:
+def test_openai_serializer_includes_investment_schema(tmp_path: Path) -> None:
     plugin = build_openai_plugin(
         OpenAIProviderConfig(api_key="test-key", allow_local_fallback=True)
     )

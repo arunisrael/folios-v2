@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import os
-from collections.abc import AsyncIterator, Awaitable, Iterable
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
 from contextlib import asynccontextmanager
-from typing import Any, Callable
+from typing import Any
 
 import httpx
 
@@ -210,7 +210,7 @@ class FinnhubScreener(ScreenerProvider):
         client: httpx.AsyncClient,
         path: str,
         params: dict[str, Any],
-    ) -> Any:
+    ) -> object:
         query = dict(params)
         query["token"] = self._token
         try:
@@ -223,7 +223,7 @@ class FinnhubScreener(ScreenerProvider):
         except httpx.HTTPStatusError as exc:
             msg = f"Finnhub request failed with status {exc.response.status_code}"
             raise ScreenerError(msg) from exc
-        except httpx.HTTPError as exc:  # noqa: PERF203
+        except httpx.HTTPError as exc:
             msg = "Finnhub request failed"
             raise ScreenerError(msg) from exc
 

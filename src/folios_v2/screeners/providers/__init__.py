@@ -3,4 +3,4 @@
 from .finnhub import FinnhubScreener
 from .fmp import FMPScreener
 
-__all__ = ["FinnhubScreener", "FMPScreener"]
+__all__ = ["FMPScreener", "FinnhubScreener"]

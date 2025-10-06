@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import httpx
 
@@ -18,16 +19,20 @@ from folios_v2.providers import (
     ResultParser,
     SerializeResult,
 )
-from folios_v2.providers.exceptions import ExecutionError, ParseError, ProviderError, SerializationError
+from folios_v2.providers.exceptions import (
+    ExecutionError,
+    ParseError,
+    ProviderError,
+    SerializationError,
+)
 from folios_v2.providers.models import DownloadResult, PollResult, SubmitResult
 from folios_v2.schemas import OPENAI_RESPONSE_FORMAT
-
 
 _OPENAI_BATCH_ENDPOINT = "/v1/batches"
 _OPENAI_FILES_ENDPOINT = "/v1/files"
 _DEFAULT_SYSTEM_MESSAGE = (
-    "You are a research analyst returning JSON that conforms to the investment_analysis_v1 schema. "
-    "Respond with valid JSON only."
+    "You are a research analyst returning JSON that conforms to the "
+    "investment_analysis_v1 schema. Respond with valid JSON only."
 )
 
 
@@ -43,7 +48,7 @@ class OpenAIProviderConfig:
     allow_local_fallback: bool = field(default=True)
 
     @classmethod
-    def from_env(cls) -> "OpenAIProviderConfig":
+    def from_env(cls) -> OpenAIProviderConfig:
         defaults = cls()
         return cls(
             api_key=os.getenv("OPENAI_API_KEY") or None,
@@ -58,7 +63,13 @@ class OpenAIProviderConfig:
 class OpenAIRequestSerializer(RequestSerializer):
     """Serialize request metadata into a JSONL payload for the OpenAI batch endpoint."""
 
-    def __init__(self, *, model: str, system_message: str, filename: str = "openai_payload.jsonl") -> None:
+    def __init__(
+        self,
+        *,
+        model: str,
+        system_message: str,
+        filename: str = "openai_payload.jsonl",
+    ) -> None:
         self._model = model
         self._system_message = system_message
         self._filename = filename
@@ -66,7 +77,9 @@ class OpenAIRequestSerializer(RequestSerializer):
     async def serialize(self, ctx: ExecutionTaskContext) -> SerializeResult:
         prompt = ctx.request.metadata.get("strategy_prompt")
         if not prompt:
-            raise SerializationError("strategy_prompt metadata is required for OpenAI batch submission")
+            raise SerializationError(
+                "strategy_prompt metadata is required for OpenAI batch submission"
+            )
 
         payload_path = ctx.artifact_dir / self._filename
         payload_path.parent.mkdir(parents=True, exist_ok=True)
@@ -206,7 +219,11 @@ class OpenAIBatchExecutor(BatchExecutor):
             "output_file_id": output_file_id,
             "provider_job_id": provider_job_id,
         }
-        return DownloadResult(artifact_path=artifact_path, content_type="application/jsonl", metadata=metadata)
+        return DownloadResult(
+            artifact_path=artifact_path,
+            content_type="application/jsonl",
+            metadata=metadata,
+        )
 
 
 def _map_openai_status(status: str) -> str:
@@ -259,8 +276,8 @@ class OpenAIResultParser(ResultParser):
 
 
 __all__ = [
+    "OpenAIBatchExecutor",
     "OpenAIProviderConfig",
     "OpenAIRequestSerializer",
-    "OpenAIBatchExecutor",
     "OpenAIResultParser",
 ]

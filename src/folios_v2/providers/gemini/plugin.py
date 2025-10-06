@@ -11,7 +11,12 @@ from folios_v2.providers.local_batch import (
     LocalJSONRequestSerializer,
 )
 
-from .batch import GeminiBatchExecutor, GeminiProviderConfig, GeminiRequestSerializer, GeminiResultParser
+from .batch import (
+    GeminiBatchExecutor,
+    GeminiProviderConfig,
+    GeminiRequestSerializer,
+    GeminiResultParser,
+)
 from .cli_executor import GeminiCliExecutor
 
 
@@ -53,4 +58,4 @@ def build_gemini_plugin(config: GeminiProviderConfig | None = None) -> ProviderP
 
 GEMINI_PLUGIN = build_gemini_plugin()
 
-__all__ = ["build_gemini_plugin", "GEMINI_PLUGIN", "GeminiCliExecutor"]
+__all__ = ["GEMINI_PLUGIN", "GeminiCliExecutor", "build_gemini_plugin"]

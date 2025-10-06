@@ -18,7 +18,7 @@ from folios_v2.providers.openai import OpenAIProviderConfig, build_openai_plugin
 from folios_v2.runtime import BatchRuntime, CliRuntime
 from folios_v2.scheduling import HolidayCalendar, WeekdayLoadBalancer
 from folios_v2.screeners import ScreenerError, ScreenerService
-from folios_v2.screeners.providers import FMPScreener, FinnhubScreener
+from folios_v2.screeners.providers import FinnhubScreener, FMPScreener
 
 UnitOfWorkFactory = Callable[[], UnitOfWork]
 

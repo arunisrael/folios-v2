@@ -11,7 +11,12 @@ from folios_v2.providers.local_batch import (
     LocalJSONRequestSerializer,
 )
 
-from .batch import OpenAIBatchExecutor, OpenAIProviderConfig, OpenAIRequestSerializer, OpenAIResultParser
+from .batch import (
+    OpenAIBatchExecutor,
+    OpenAIProviderConfig,
+    OpenAIRequestSerializer,
+    OpenAIResultParser,
+)
 from .cli_executor import CodexCliExecutor
 
 
@@ -63,7 +68,7 @@ def build_openai_plugin(config: OpenAIProviderConfig | None = None) -> ProviderP
 OPENAI_PLUGIN = build_openai_plugin()
 
 __all__ = [
-    "build_openai_plugin",
     "OPENAI_PLUGIN",
     "CodexCliExecutor",
+    "build_openai_plugin",
 ]

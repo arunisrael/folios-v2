@@ -5,10 +5,10 @@ from __future__ import annotations
 import asyncio
 import json
 import os
-from copy import deepcopy
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from google import genai
 from google.genai import types as genai_types
@@ -20,22 +20,27 @@ from folios_v2.providers import (
     ResultParser,
     SerializeResult,
 )
-from folios_v2.providers.exceptions import ExecutionError, ParseError, ProviderError, SerializationError
+from folios_v2.providers.exceptions import (
+    ExecutionError,
+    ParseError,
+    ProviderError,
+    SerializationError,
+)
 from folios_v2.providers.models import DownloadResult, PollResult, SubmitResult
 from folios_v2.schemas import INVESTMENT_ANALYSIS_SCHEMA
 
-
 _DEFAULT_SYSTEM_INSTRUCTIONS = (
     "Return only valid JSON conforming to the provided schema. No markdown, no prose. "
-    "If a value is unknown, use null (don't invent). All strings must be UTF-8; escape newlines "
-    "and quotes. Dates must be ISO-8601 (YYYY-MM-DD). Use enum values exactly as listed; otherwise "
-    "fail. Do not include trailing commas. Trading eligibility and symbol validity: Only recommend "
-    "currently listed, tradeable U.S. equities (NYSE, Nasdaq, NYSE American). Exclude OTC/pink sheet "
-    "and delisted symbols. Do not invent or use placeholder/generic tickers (e.g., ABC, TEST). Company "
-    "names must match the ticker's real company. Before adding any recommendation, you must confirm the "
-    "ticker remains active on those exchanges and has not recently changed symbols or been delisted. If "
-    "no valid symbols qualify, return an empty recommendations array. Recency: Prioritize information "
-    "from 2025 Q2 onward (especially Q3 2025)."
+    "If a value is unknown, use null (don't invent). All strings must be UTF-8; escape "
+    "newlines and quotes. Dates must be ISO-8601 (YYYY-MM-DD). Use enum values exactly "
+    "as listed; otherwise fail. Do not include trailing commas. Trading eligibility and "
+    "symbol validity: Only recommend currently listed, tradeable U.S. equities (NYSE, "
+    "Nasdaq, NYSE American). Exclude OTC/pink sheet and delisted symbols. Do not invent "
+    "or use placeholder/generic tickers (e.g., ABC, TEST). Company names must match the "
+    "ticker's real company. Before adding any recommendation, confirm the ticker remains "
+    "active on those exchanges and has not recently changed symbols or been delisted. If "
+    "no valid symbols qualify, return an empty recommendations array. Recency: Prioritize "
+    "information from 2025 Q2 onward (especially Q3 2025)."
 )
 
 
@@ -76,7 +81,9 @@ class GeminiRequestSerializer(RequestSerializer):
     async def serialize(self, ctx: ExecutionTaskContext) -> SerializeResult:
         prompt = ctx.request.metadata.get("strategy_prompt")
         if not prompt:
-            raise SerializationError("strategy_prompt metadata is required for Gemini batch submission")
+            raise SerializationError(
+                "strategy_prompt metadata is required for Gemini batch submission"
+            )
 
         prompt_text = f"{self._instructions}\n\n{prompt}" if self._instructions else prompt
         payload_path = ctx.artifact_dir / self._filename
@@ -345,7 +352,7 @@ def _map_gemini_status(state: str | None) -> str:
 def _clean_schema_for_gemini(schema: Mapping[str, Any]) -> Mapping[str, Any]:
     """Remove unsupported schema fields for Gemini responseSchema."""
 
-    def _clean(node: Any) -> Any:
+    def _clean(node: object) -> object:
         if isinstance(node, dict):
             cleaned = {
                 key: _clean(value)
@@ -361,8 +368,8 @@ def _clean_schema_for_gemini(schema: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 __all__ = [
+    "GeminiBatchExecutor",
     "GeminiProviderConfig",
     "GeminiRequestSerializer",
-    "GeminiBatchExecutor",
     "GeminiResultParser",
 ]
