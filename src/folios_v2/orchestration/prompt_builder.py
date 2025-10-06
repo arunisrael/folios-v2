@@ -4,17 +4,17 @@ from __future__ import annotations
 
 from folios_v2.domain import ExecutionMode, RiskControls, Strategy
 
-_RECENCY_BLOCK = (
+RECENCY_BLOCK = (
     "\n\nRecency requirements (must follow):\n"
-    "- Prioritize the freshest filings, news, and price action available before forming "
-    "conclusions.\n"
-    "- If your toolset supports web search or retrieval, run a fresh search before final "
-    "recommendations and cite the sources consulted.\n"
-    "- Historic events may be referenced only when corroborated by current data; avoid relying "
-    "on outdated catalysts.\n"
+    "- Prioritize data, filings, news, and price action from 2025 Q2 onward, with extra weight "
+    "on the latest quarter (Q3 2025).\n"
+    "- If your toolset supports web search or retrieval, run a fresh search before forming "
+    "conclusions and cite the 2025 sources consulted.\n"
+    "- Treat pandemic-era demand shifts as historical context only; never cite them as current "
+    "catalysts unless corroborated by 2025 data.\n"
 )
 
-_COMPLIANCE_BLOCK = (
+COMPLIANCE_BLOCK = (
     "\n\nCompliance constraints (must follow):\n"
     "- Only recommend currently listed, tradeable U.S. stock tickers on NYSE, Nasdaq, or "
     "NYSE American.\n"
@@ -122,8 +122,8 @@ def build_research_prompt(
 
     prompt = (
         base_prompt
-        + _RECENCY_BLOCK
-        + _COMPLIANCE_BLOCK
+        + RECENCY_BLOCK
+        + COMPLIANCE_BLOCK
         + _risk_constraints_block(strategy.risk_controls)
         + _candidates_block(screener_candidates)
     )
