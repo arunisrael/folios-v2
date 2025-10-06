@@ -18,6 +18,7 @@ dependencies = [
     "jinja2>=3.1",
     "python-dateutil>=2.9",
     "greenlet>=3.0",
+    "google-genai>=0.3.0",
 ]
 
 [project.scripts]

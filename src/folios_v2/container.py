@@ -12,8 +12,8 @@ from folios_v2.persistence import UnitOfWork
 from folios_v2.persistence.sqlite import create_sqlite_unit_of_work_factory
 from folios_v2.providers import ProviderRegistry
 from folios_v2.providers.anthropic import ANTHROPIC_PLUGIN
-from folios_v2.providers.gemini import GEMINI_PLUGIN
-from folios_v2.providers.openai import OPENAI_PLUGIN
+from folios_v2.providers.gemini import GeminiProviderConfig, build_gemini_plugin
+from folios_v2.providers.openai import OpenAIProviderConfig, build_openai_plugin
 from folios_v2.runtime import BatchRuntime, CliRuntime
 from folios_v2.scheduling import HolidayCalendar, WeekdayLoadBalancer
 
@@ -55,8 +55,27 @@ def build_container(settings: AppSettings | None = None) -> ServiceContainer:
     artifacts_root.mkdir(parents=True, exist_ok=True)
 
     registry = ProviderRegistry()
-    registry.register(OPENAI_PLUGIN, override=True)
-    registry.register(GEMINI_PLUGIN, override=True)
+
+    openai_plugin = build_openai_plugin(
+        OpenAIProviderConfig(
+            api_key=resolved_settings.openai_api_key,
+            model=resolved_settings.openai_batch_model,
+            endpoint=resolved_settings.openai_api_base,
+            completion_window=resolved_settings.openai_completion_window,
+            system_message=resolved_settings.openai_batch_system_message,
+            allow_local_fallback=resolved_settings.enable_local_batch_fallback,
+        )
+    )
+    registry.register(openai_plugin, override=True)
+
+    gemini_plugin = build_gemini_plugin(
+        GeminiProviderConfig(
+            api_key=resolved_settings.gemini_api_key,
+            model=resolved_settings.gemini_batch_model,
+            allow_local_fallback=resolved_settings.enable_local_batch_fallback,
+        )
+    )
+    registry.register(gemini_plugin, override=True)
     registry.register(ANTHROPIC_PLUGIN, override=True)
 
     _ensure_sqlite_directory(resolved_settings.database_url)

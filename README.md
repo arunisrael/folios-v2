@@ -32,3 +32,24 @@ folios-v2/
 ```
 
 Implementation proceeds in phases; see `docs/requirements.md` for the captured scope and design targets.
+
+## Batch Provider Configuration
+
+Real batch execution now prefers the live OpenAI API when credentials are supplied. Configure the behaviour
+with the following environment variables (typically via `.env.local` in development or your secret store in
+deployed environments):
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | Credential used for the `/v1/batches` API. Required for real submissions. | _unset_ |
+| `OPENAI_API_BASE` | Override the API base URL (for proxies or sandboxes). | `https://api.openai.com` |
+| `OPENAI_BATCH_MODEL` | Model used for batch chat completions. | `gpt-4o-mini` |
+| `OPENAI_COMPLETION_WINDOW` | OpenAI completion window passed when creating batches. | `24h` |
+| `OPENAI_BATCH_SYSTEM_MESSAGE` | System prompt injected ahead of the request prompt. | JSON-only guardrail text |
+| `FOLIOS_LOCAL_BATCH_FALLBACK` | Set to `0`/`false` to disable local JSON echo fallback when keys are missing. | `1` |
+| `GEMINI_API_KEY` / `GOOGLE_API_KEY` | Credential used for Gemini Batch Mode. Required for real submissions. | _unset_ |
+| `GEMINI_BATCH_MODEL` | Gemini model name for batch calls. | `gemini-2.5-pro` |
+
+When `OPENAI_API_KEY` is present (and fallback remains enabled) the container automatically wires the
+OpenAI provider plugin to use the real serializer/executor/parser trio defined in `folios_v2.providers.openai.batch`.
+Without credentials the previous local JSON simulator remains available for offline development.
