@@ -19,6 +19,8 @@ dependencies = [
     "python-dateutil>=2.9",
     "greenlet>=3.0",
     "google-genai>=0.3.0",
+    "yfinance>=0.2.0",
+    "python-dotenv>=1.1.1",
 ]
 
 [project.scripts]

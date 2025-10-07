@@ -36,6 +36,7 @@ class AppSettings:
         "investment_analysis_v1 schema. Respond with valid JSON only."
     )
     gemini_batch_model: str = "gemini-2.5-pro"
+    claude_cli_path: str = "/Users/arun/.claude/local/claude"
 
     @classmethod
     def from_env(cls) -> AppSettings:
@@ -59,6 +60,7 @@ class AppSettings:
                 "OPENAI_BATCH_SYSTEM_MESSAGE", cls.openai_batch_system_message
             ),
             gemini_batch_model=os.getenv("GEMINI_BATCH_MODEL", cls.gemini_batch_model),
+            claude_cli_path=os.getenv("CLAUDE_CLI_PATH", cls.claude_cli_path),
         )
 
 

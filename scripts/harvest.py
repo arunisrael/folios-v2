@@ -4,8 +4,15 @@ from __future__ import annotations
 
 import asyncio
 import json
+from pathlib import Path
 
 import typer
+from dotenv import load_dotenv
+
+# Load .env file before importing folios modules
+_env_path = Path(__file__).parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(_env_path)
 
 from folios_v2.cli.deps import get_container
 from folios_v2.domain import ExecutionMode, LifecycleState
