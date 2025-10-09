@@ -128,7 +128,7 @@ class GeminiBatchExecutor(BatchExecutor):
         *,
         api_key: str,
         model: str = "gemini-2.5-pro",
-        request_timeout: float = 30.0,
+        request_timeout: float = 600.0,
     ) -> None:
         if not api_key:
             raise ProviderError("GeminiBatchExecutor requires a valid API key")
@@ -138,7 +138,9 @@ class GeminiBatchExecutor(BatchExecutor):
         self._meta: dict[str, dict[str, Any]] = {}
 
     def _client(self) -> genai.Client:
-        return genai.Client(api_key=self._api_key, http_options={"timeout": self._request_timeout})
+        # Google genai SDK expects timeout in milliseconds, not seconds
+        timeout_ms = int(self._request_timeout * 1000)
+        return genai.Client(api_key=self._api_key, http_options={"timeout": timeout_ms})
 
     async def submit(self, ctx: ExecutionTaskContext, payload: SerializeResult) -> SubmitResult:
         payload_path = Path(payload.payload_path)
