@@ -12,3 +12,6 @@ __pycache__/
 artifacts/
 final_recommendations.json
 folios_v2.db
+
+# Generated HTML files
+public/

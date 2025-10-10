@@ -6,6 +6,7 @@ PROVIDERS ?= openai,gemini,anthropic
 .PHONY: list-strategies submit harvest execute status workflow
 .PHONY: submit-batch submit-cli submit-stale test-cli
 .PHONY: gemini-submit gemini-status gemini-harvest check-batch-status
+.PHONY: generate-html generate-email publish-html
 
 # Development commands
 format:
@@ -132,6 +133,20 @@ check-batch-status:
 	@echo "===================="
 	@$(UV) run python scripts/check_gemini_batch.py local
 
+# HTML generation
+generate-html:
+	@echo "Generating public HTML files..."
+	@echo "================================"
+	$(UV) run python -m scripts.generate_public_html --db $(DB) --out public/
+
+generate-email:
+	@echo "Generating weekly email digest..."
+	@echo "=================================="
+	$(UV) run python -m scripts.generate_weekly_email --db $(DB) --out public/email
+
+publish-html: generate-html generate-email
+	@echo "✅ HTML files generated in public/"
+
 # Help command
 help:
 	@echo "Folios v2 - Available Make Targets"
@@ -169,6 +184,11 @@ help:
 	@echo
 	@echo "Batch Monitoring:"
 	@echo "  make check-batch-status       - Show OpenAI and Gemini batch status"
+	@echo
+	@echo "HTML Generation:"
+	@echo "  make generate-html            - Generate public HTML files (leaderboard, strategies, feed)"
+	@echo "  make generate-email           - Generate weekly email digest"
+	@echo "  make publish-html             - Generate all HTML outputs"
 	@echo
 	@echo "Configuration:"
 	@echo "  PROVIDERS=openai,gemini,anthropic - Set providers (default: all)"
