@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    {
+      "ticker": "AAPL",
+      "action": "BUY"
+    },
+    {
+      "company_name": "Missing Ticker Corp",
+      "action": "SELL",
+      "confidence": 70,
+      "investment_thesis": "No ticker provided"
+    }
+  ]
+}

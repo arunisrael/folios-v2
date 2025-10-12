@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any
+
 
 # Define html_escape function to avoid naming conflict with scripts/html package
 def html_escape(text: str) -> str:
@@ -29,37 +30,57 @@ def base_css() -> str:
     """Return base CSS styles."""
     return """
     body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        line-height: 1.6;
-        color: #24292e;
+        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+        margin: 24px;
     }
-    h1 {
-        border-bottom: 1px solid #e1e4e8;
-        padding-bottom: 10px;
-    }
-    h2 {
-        margin-top: 24px;
-        color: #0366d6;
+    h1, h2, h3 {
+        margin: 0.8em 0 0.4em;
     }
     table {
         border-collapse: collapse;
         width: 100%;
-        margin: 20px 0;
+        margin: 12px 0 24px;
     }
     th, td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
         text-align: left;
-        padding: 12px;
-        border-bottom: 1px solid #e1e4e8;
     }
     th {
-        background-color: #f6f8fa;
-        font-weight: 600;
+        background: #f9fafb;
     }
-    tr:hover {
-        background-color: #f6f8fa;
+    tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+    .muted {
+        color: #6b7280;
+    }
+    .right {
+        text-align: right;
+    }
+    .small {
+        font-size: 0.9em;
+    }
+    .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+    }
+    pre {
+        white-space: pre-wrap;
+        background: #f9fafb;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+    }
+    a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
     }
     .positive {
         color: #22863a;
@@ -67,26 +88,42 @@ def base_css() -> str:
     .negative {
         color: #d73a49;
     }
-    .strategy-link {
-        color: #0366d6;
-        text-decoration: none;
+    details {
+        margin: 16px 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        background: #f9fafb;
     }
-    .strategy-link:hover {
-        text-decoration: underline;
+    details summary {
+        cursor: pointer;
+        padding: 12px 16px;
+        font-weight: 600;
+        color: #374151;
+        user-select: none;
+        list-style: none;
     }
-    .date-group {
-        margin-top: 32px;
-        padding-top: 16px;
-        border-top: 2px solid #e1e4e8;
+    details summary::-webkit-details-marker {
+        display: none;
     }
-    .meta {
-        color: #586069;
-        font-size: 14px;
+    details summary::before {
+        content: '▶';
+        display: inline-block;
+        margin-right: 8px;
+        transition: transform 0.2s;
+        font-size: 0.8em;
     }
-    .rationale {
-        font-style: italic;
-        color: #586069;
-        margin-top: 4px;
+    details[open] summary::before {
+        transform: rotate(90deg);
+    }
+    details summary:hover {
+        background: #f3f4f6;
+    }
+    details[open] summary {
+        border-bottom: 1px solid #e5e7eb;
+    }
+    details .details-content {
+        padding: 16px;
+        background: #ffffff;
     }
     """
 
@@ -120,52 +157,72 @@ def render_html_page(title: str, body_html: str) -> str:
 
 def render_leaderboard(
     strategies: list[dict[str, Any]],
-    portfolio_accounts: dict[str, list[dict[str, Any]]]
+    portfolio_accounts: dict[str, list[dict[str, Any]]],
+    all_strategy_provider_pairs: list[tuple[str, str]]
 ) -> str:
     """Render leaderboard HTML (index.html).
 
     Args:
         strategies: List of strategy dicts
         portfolio_accounts: Dict mapping strategy_id to list of portfolio accounts
+        all_strategy_provider_pairs: List of all (strategy_id, provider_id) tuples with requests
 
     Returns:
         Complete HTML page
     """
-    # Calculate returns for each strategy
-    strategy_stats = []
-    for strategy in strategies:
-        sid = strategy["id"]
+    # Create a mapping of strategy IDs to names for quick lookup
+    strategy_map = {s["id"]: s for s in strategies}
+
+    # Create portfolio account lookup for quick access
+    account_lookup: dict[tuple[str, str], dict[str, Any]] = {}
+    for sid, accounts in portfolio_accounts.items():
+        for acc in accounts:
+            provider_id = acc.get("provider_id", "unknown")
+            account_lookup[(sid, provider_id)] = acc
+
+    # Calculate returns for each strategy+provider combination that has been requested
+    portfolio_stats = []
+    for sid, provider_id in all_strategy_provider_pairs:
+        strategy = strategy_map.get(sid)
+        if not strategy:
+            continue
+
         name = strategy["name"]
         payload = strategy.get("payload", {})
         initial_capital = Decimal(str(payload.get("initial_capital_usd", 100000)))
+        provider_name = PROVIDER_NAMES.get(provider_id, provider_id)
 
-        accounts = portfolio_accounts.get(sid, [])
-        total_value = Decimal("0")
-        for acc in accounts:
+        # Check if this strategy+provider has an account with actual portfolio data
+        acc = account_lookup.get((sid, provider_id))
+        if acc:
             cash = Decimal(str(acc.get("cash_balance", 0)))
             equity = Decimal(str(acc.get("equity_value", 0)))
-            total_value += cash + equity
+            total_value = cash + equity
+        else:
+            # Strategy was requested but no trades executed yet
+            total_value = initial_capital
 
         if initial_capital > 0:
             return_pct = ((total_value - initial_capital) / initial_capital) * 100
         else:
             return_pct = Decimal("0")
 
-        strategy_stats.append({
+        portfolio_stats.append({
             "id": sid,
             "name": name,
+            "provider_id": provider_id,
+            "provider_name": provider_name,
             "total_value": total_value,
             "initial_capital": initial_capital,
             "return_pct": return_pct,
-            "num_providers": len(accounts),
         })
 
     # Sort by return percentage (descending)
-    strategy_stats.sort(key=lambda x: x["return_pct"], reverse=True)
+    portfolio_stats.sort(key=lambda x: x["return_pct"], reverse=True)
 
     # Build table rows
     rows = []
-    for i, stat in enumerate(strategy_stats, 1):
+    for i, stat in enumerate(portfolio_stats, 1):
         return_class = "positive" if stat["return_pct"] >= 0 else "negative"
         return_sign = "+" if stat["return_pct"] >= 0 else ""
 
@@ -173,10 +230,10 @@ def render_leaderboard(
         <tr>
             <td>{i}</td>
             <td><a href="strategy-{html_escape(stat['id'])}.html" class="strategy-link">{html_escape(stat['name'])}</a></td>
-            <td>${stat['total_value']:,.2f}</td>
-            <td>${stat['initial_capital']:,.2f}</td>
-            <td class="{return_class}">{return_sign}{stat['return_pct']:.2f}%</td>
-            <td>{stat['num_providers']}</td>
+            <td><span class="pill">{stat['provider_name']}</span></td>
+            <td class="right">${stat['total_value']:,.2f}</td>
+            <td class="right">${stat['initial_capital']:,.2f}</td>
+            <td class="right {return_class}">{return_sign}{stat['return_pct']:.2f}%</td>
         </tr>
         """)
 
@@ -186,10 +243,10 @@ def render_leaderboard(
             <tr>
                 <th>Rank</th>
                 <th>Strategy</th>
-                <th>Total Value</th>
-                <th>Initial Capital</th>
-                <th>Return %</th>
-                <th>Providers</th>
+                <th>Provider</th>
+                <th class="right">Portfolio Value</th>
+                <th class="right">Initial Capital</th>
+                <th class="right">Return %</th>
             </tr>
         </thead>
         <tbody>
@@ -200,7 +257,7 @@ def render_leaderboard(
 
     body = f"""
     <h1>Strategy Leaderboard</h1>
-    <p class="meta">Generated: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}</p>
+    <p class="meta">Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}</p>
     <p><a href="feed.html">View Activity Feed</a></p>
     {table_html}
     """
@@ -228,8 +285,12 @@ def render_strategy_detail(
         Complete HTML page
     """
     name = strategy["name"]
+    strategy_id = strategy["id"]
     payload = strategy.get("payload", {})
     initial_capital = Decimal(str(payload.get("initial_capital_usd", 100000)))
+
+    # Get strategy prompt if available
+    strategy_prompt = payload.get("prompt", "")
 
     # Build provider sections
     provider_sections = []
@@ -244,89 +305,155 @@ def render_strategy_detail(
         positions = positions_by_provider.get(provider_id, [])
         trades = trade_history_by_provider.get(provider_id, [])
 
-        # Positions table
+        # Positions table with enhanced columns
         position_rows = []
+        total_position_value = Decimal("0")
         for pos in positions:
             symbol = pos["symbol"]
+            side = pos.get("side", "long")  # Get position side
             qty = Decimal(str(pos.get("quantity", 0)))
             price = prices.get(symbol, Decimal("0"))
             market_value = qty * price
+            total_position_value += market_value
             avg_entry = pos.get("avg_entry_price")
 
-            if avg_entry:
-                unrealized_pl = (price - Decimal(str(avg_entry))) * qty
-                pl_class = "positive" if unrealized_pl >= 0 else "negative"
-                pl_sign = "+" if unrealized_pl >= 0 else ""
-                pl_str = f'<span class="{pl_class}">{pl_sign}${unrealized_pl:,.2f}</span>'
+            # Format dates
+            opened_at = pos.get("opened_at")
+            if opened_at:
+                if isinstance(opened_at, str):
+                    opened_str = opened_at[:10]
+                else:
+                    opened_str = opened_at.strftime('%Y-%m-%d')
             else:
-                pl_str = "N/A"
+                opened_str = "-"
+
+            closed_at = pos.get("closed_at")
+            closed_str = closed_at[:10] if closed_at else "-"
+
+            if avg_entry:
+                avg_entry_dec = Decimal(str(avg_entry))
+                # For short positions, P/L is inverted (profit when price goes down)
+                if side == "short":
+                    unrealized_pl = (avg_entry_dec - price) * qty
+                else:
+                    unrealized_pl = (price - avg_entry_dec) * qty
+                pl_class = "positive" if unrealized_pl >= 0 else "negative"
+                pl_str = f'${unrealized_pl:,.2f}'
+            else:
+                avg_entry_dec = Decimal("0")
+                pl_str = "$0.00"
+                pl_class = ""
 
             position_rows.append(f"""
             <tr>
                 <td>{html_escape(symbol)}</td>
-                <td>{qty:.2f}</td>
-                <td>${price:,.2f}</td>
-                <td>${market_value:,.2f}</td>
-                <td>{pl_str}</td>
+                <td>{html_escape(side)}</td>
+                <td>{opened_str}</td>
+                <td>{closed_str}</td>
+                <td class="right">{qty:.4f}</td>
+                <td class="right">${avg_entry_dec:,.2f}</td>
+                <td class="right">${price:,.2f}</td>
+                <td class="right">${market_value:,.2f}</td>
+                <td class="right {pl_class}">{pl_str}</td>
             </tr>
             """)
+
+        # Add CASH row
+        cash_row = f"""
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">${cash:,.2f}</td>
+                <td class="right">-</td>
+            </tr>
+            """
 
         positions_table = f"""
         <table>
             <thead>
                 <tr>
                     <th>Symbol</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Market Value</th>
-                    <th>Unrealized P/L</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
                 </tr>
             </thead>
             <tbody>
-                {"".join(position_rows) if position_rows else "<tr><td colspan='5'>No open positions</td></tr>"}
+                {cash_row}
+                {"".join(position_rows) if position_rows else ""}
             </tbody>
         </table>
         """
 
-        # Trade history (last 20)
+        # Summary table
+        summary_table = f"""
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">${total_position_value:,.2f}</td></tr>
+                <tr><td>Cash</td><td class="right">${cash:,.2f}</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>${total_value:,.2f}</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">${total_value:,.2f}</td></tr>
+            </tbody>
+        </table>
+        """
+
+        # Trade history with essential columns only
         trade_rows = []
         for trade in trades[:20]:
             action = trade.get("action", "")
             symbol = trade.get("symbol", "")
-            qty = trade.get("quantity", 0)
-            price = trade.get("price", 0)
-            timestamp = trade.get("timestamp")
-            rationale = trade.get("rationale", "")
+            qty = float(trade.get("quantity", 0))
+            price = float(trade.get("price", 0) or 0)
+            timestamp = trade.get("timestamp")  # Portfolio engine uses "timestamp"
 
             if timestamp:
                 if isinstance(timestamp, str):
-                    timestamp_str = timestamp[:16].replace('T', ' ')  # ISO format to readable
+                    timestamp_str = timestamp[:19].replace('T', ' ')
                 else:
-                    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M')
+                    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%S')
             else:
                 timestamp_str = ""
+
+            cash_delta = -qty * price if action == "BUY" else qty * price
 
             trade_rows.append(f"""
             <tr>
                 <td>{timestamp_str}</td>
                 <td>{html_escape(action)}</td>
                 <td>{html_escape(symbol)}</td>
-                <td>{qty:.2f}</td>
-                <td>${price:,.2f}</td>
-                <td class="rationale">{html_escape(rationale)}</td>
+                <td class="right">{qty:.4f}</td>
+                <td class="right">${price:,.2f}</td>
+                <td class="right">${cash_delta:,.2f}</td>
             </tr>
             """)
 
         trades_table = f"""
+        <h4>Trade History — {provider_name}</h4>
         <table>
             <thead>
                 <tr>
-                    <th>Time</th>
+                    <th>Timestamp</th>
                     <th>Action</th>
                     <th>Symbol</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Rationale</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
                 </tr>
             </thead>
             <tbody>
@@ -336,30 +463,60 @@ def render_strategy_detail(
         """
 
         provider_sections.append(f"""
-        <div class="provider-section">
-            <h2>{provider_name}</h2>
-            <p><strong>Cash:</strong> ${cash:,.2f} | <strong>Equity:</strong> ${equity:,.2f} | <strong>Total:</strong> ${total_value:,.2f}</p>
+        <h3>Positions — {provider_name}</h3>
+        {positions_table}
 
-            <h3>Open Positions</h3>
-            {positions_table}
+        {summary_table}
 
-            <h3>Recent Trades</h3>
-            {trades_table}
-        </div>
+        {trades_table}
         """)
 
-    body = f"""
-    <h1>{html_escape(name)}</h1>
-    <p class="meta">
-        <a href="index.html">← Back to Leaderboard</a> |
-        <a href="feed.html">Activity Feed</a>
-    </p>
-    <p><strong>Initial Capital:</strong> ${initial_capital:,.2f}</p>
-
-    {"".join(provider_sections)}
+    # Strategy prompt section (collapsible)
+    prompt_section = ""
+    if strategy_prompt:
+        prompt_section = f"""
+    <details>
+        <summary>Strategy Prompt</summary>
+        <div class="details-content">
+            <pre>{html_escape(strategy_prompt)}</pre>
+        </div>
+    </details>
     """
 
-    return render_html_page(f"{name} - Strategy Details", body)
+    body = f"""
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    <h1>{html_escape(name)}</h1>
+    <p class="muted small">Strategy ID: {html_escape(strategy_id)}</p>
+
+    {prompt_section}
+
+    <h2>Provider Portfolios</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th class="right">Portfolio Value</th>
+          <th class="right">Return</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {"".join([
+            f'<tr><td><span class="pill">{acc["provider_id"]}</span></td>'
+            f'<td class="right">${(Decimal(str(acc.get("cash_balance", 0))) + Decimal(str(acc.get("equity_value", 0)))):,.2f}</td>'
+            f'<td class="right">{(((Decimal(str(acc.get("cash_balance", 0))) + Decimal(str(acc.get("equity_value", 0)))) - initial_capital) / initial_capital * 100 if initial_capital > 0 else Decimal("0")):.2f}%</td>'
+            f'<td class="small">-</td></tr>'
+            for acc in portfolio_accounts
+        ])}
+      </tbody>
+    </table>
+
+    {"".join(provider_sections)}
+
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    """
+
+    return render_html_page(f"{name}", body)
 
 
 def render_activity_feed(
@@ -398,7 +555,8 @@ def render_activity_feed(
 
         rows = []
         for order in orders_for_date:
-            strategy_name = strategy_id_to_name.get(order.get("strategy_id", ""), "Unknown")
+            strategy_id = order.get("strategy_id", "")
+            strategy_name = strategy_id_to_name.get(strategy_id, "Unknown")
             provider_name = PROVIDER_NAMES.get(order.get("provider_id", ""), order.get("provider_id", ""))
             action = order.get("action", "")
             symbol = order.get("symbol", "")
@@ -406,20 +564,16 @@ def render_activity_feed(
             price_val = order.get("price")
             price = float(price_val) if price_val is not None else 0.0
             rationale = order.get("rationale", "")
-            timestamp = order.get("placed_at")
 
-            if timestamp:
-                if isinstance(timestamp, str):
-                    time_str = timestamp[11:16]  # Extract HH:MM from ISO
-                else:
-                    time_str = timestamp.strftime('%H:%M')
+            # Make strategy name a clickable link to the strategy detail page
+            if strategy_id:
+                strategy_link = f'<a href="strategy-{html_escape(strategy_id)}.html">{html_escape(strategy_name)}</a>'
             else:
-                time_str = ""
+                strategy_link = html_escape(strategy_name)
 
             rows.append(f"""
             <tr>
-                <td>{time_str}</td>
-                <td>{html_escape(strategy_name)}</td>
+                <td>{strategy_link}</td>
                 <td>{html_escape(provider_name)}</td>
                 <td>{html_escape(action)}</td>
                 <td>{html_escape(symbol)}</td>
@@ -427,7 +581,7 @@ def render_activity_feed(
                 <td>${price:,.2f}</td>
             </tr>
             <tr>
-                <td colspan="7" class="rationale">{html_escape(rationale)}</td>
+                <td colspan="6" class="rationale">{html_escape(rationale)}</td>
             </tr>
             """)
 
@@ -437,7 +591,6 @@ def render_activity_feed(
             <table>
                 <thead>
                     <tr>
-                        <th>Time</th>
                         <th>Strategy</th>
                         <th>Provider</th>
                         <th>Action</th>

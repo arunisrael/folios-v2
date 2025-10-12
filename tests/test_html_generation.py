@@ -4,13 +4,11 @@ import sys
 from decimal import Decimal
 from pathlib import Path
 
-import pytest
-
 # Add scripts directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
-from html.portfolio_engine import PortfolioEngine  # noqa: E402
-from html.templates import (  # noqa: E402
+from html_generation.portfolio_engine import PortfolioEngine
+from html_generation.templates import (
     PROVIDER_NAMES,
     base_css,
     render_html_page,
@@ -153,14 +151,20 @@ def test_render_leaderboard() -> None:
 
     portfolio_accounts = {
         "strat-1": [
-            {"cash_balance": 60000, "equity_value": 50000}  # Total: 110000 (+10%)
+            {"provider_id": "openai", "cash_balance": 60000, "equity_value": 50000}  # Total: 110000 (+10%)
         ],
         "strat-2": [
-            {"cash_balance": 55000, "equity_value": 40000}  # Total: 95000 (-5%)
+            {"provider_id": "gemini", "cash_balance": 55000, "equity_value": 40000}  # Total: 95000 (-5%)
         ],
     }
 
-    html = render_leaderboard(strategies, portfolio_accounts)
+    # Add the third parameter: all_strategy_provider_pairs
+    all_pairs = [
+        ("strat-1", "openai"),
+        ("strat-2", "gemini"),
+    ]
+
+    html = render_leaderboard(strategies, portfolio_accounts, all_pairs)
 
     assert "Strategy Leaderboard" in html
     assert "Strategy One" in html

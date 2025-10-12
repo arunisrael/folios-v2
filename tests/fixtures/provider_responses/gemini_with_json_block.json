@@ -1,0 +1,45 @@
+{
+  "provider": "gemini",
+  "cli_output": {
+    "response": "```json\n{\n  \"analysis_summary\": \"Short-selling strategy targeting overvalued tech stocks with deteriorating fundamentals.\",\n  \"overall_sentiment\": \"bearish\",\n  \"overall_confidence\": 80,\n  \"recommendations\": [\n    {\n      \"ticker\": \"SMCI\",\n      \"company_name\": \"Super Micro Computer, Inc.\",\n      \"action\": \"SELL\",\n      \"current_price\": 53.32,\n      \"target_price\": 45.0,\n      \"confidence\": 85,\n      \"investment_thesis\": \"Revenue miss and lowered guidance signal growth deceleration. Compressing margins indicate profitability pressure.\",\n      \"key_metrics\": {\n        \"pe_ratio\": 32.76,\n        \"short_interest_pct_float\": 21.29\n      },\n      \"position_size_pct\": 3.5,\n      \"risk_factors\": [\n        \"High volatility in AI sector\",\n        \"Short squeeze risk\"\n      ],\n      \"catalysts\": [\n        \"Further earnings misses\",\n        \"Margin erosion\"\n      ]\n    }\n  ]\n}\n```",
+    "stats": {
+      "models": {
+        "gemini-2.5-pro": {
+          "tokens": {
+            "prompt": 5000,
+            "candidates": 800
+          }
+        }
+      }
+    }
+  },
+  "structured": {
+    "analysis_summary": "Short-selling strategy targeting overvalued tech stocks with deteriorating fundamentals.",
+    "overall_sentiment": "bearish",
+    "overall_confidence": 80,
+    "recommendations": [
+      {
+        "ticker": "SMCI",
+        "company_name": "Super Micro Computer, Inc.",
+        "action": "SELL",
+        "current_price": 53.32,
+        "target_price": 45.0,
+        "confidence": 85,
+        "investment_thesis": "Revenue miss and lowered guidance signal growth deceleration. Compressing margins indicate profitability pressure.",
+        "key_metrics": {
+          "pe_ratio": 32.76,
+          "short_interest_pct_float": 21.29
+        },
+        "position_size_pct": 3.5,
+        "risk_factors": [
+          "High volatility in AI sector",
+          "Short squeeze risk"
+        ],
+        "catalysts": [
+          "Further earnings misses",
+          "Margin erosion"
+        ]
+      }
+    ]
+  }
+}

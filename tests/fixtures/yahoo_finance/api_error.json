@@ -1,0 +1,6 @@
+{
+  "description": "Response for API failure or network error",
+  "error_type": "ConnectionError",
+  "error_message": "Unable to connect to Yahoo Finance API",
+  "status_code": 503
+}

@@ -1,0 +1,14 @@
+{
+  "description": "Response with zero or negative price (should be treated as invalid)",
+  "fast_info": {
+    "last_price": 0,
+    "last_volume": 0,
+    "market_cap": 0,
+    "shares": 0
+  },
+  "info": {
+    "symbol": "DELISTED",
+    "currentPrice": 0,
+    "regularMarketPrice": 0
+  }
+}

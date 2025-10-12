@@ -27,6 +27,10 @@ from folios_v2.runtime import BatchRuntime
     [OPENAI_PLUGIN, GEMINI_PLUGIN, ANTHROPIC_PLUGIN],
 )
 def test_local_batch_execution(tmp_path: Path, plugin: ProviderPlugin) -> None:
+    # Skip test if plugin doesn't support batch mode
+    if not plugin.supports_batch:
+        pytest.skip(f"{plugin.display_name} does not support batch mode")
+
     strategy_id = uuid4()
     request = Request(
         id=uuid4(),

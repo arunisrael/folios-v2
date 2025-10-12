@@ -150,6 +150,9 @@ def test_anthropic_cli_executor_runs(tmp_path: Path) -> None:
 
     result = asyncio.run(executor.run(ctx, None))
     assert result.exit_code == 0
-    assert result.stdout_path is not None
-    assert result.stdout_path.read_text(encoding="utf-8").strip() == "PROMPT:gamma analysis"
+    # Anthropic CLI executor uses response.json instead of stdout
+    response_path = ctx.artifact_dir / "response.json"
+    assert response_path.exists()
+    response = json.loads(response_path.read_text(encoding="utf-8"))
+    assert response["prompt"] == "gamma analysis"
     assert (ctx.artifact_dir / "prompt.txt").exists()

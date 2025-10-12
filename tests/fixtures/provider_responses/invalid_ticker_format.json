@@ -1,0 +1,20 @@
+{
+  "analysis_summary": "Test case with invalid ticker formats",
+  "overall_confidence": 50,
+  "recommendations": [
+    {
+      "ticker": "toolong",
+      "company_name": "Invalid Ticker Company",
+      "action": "BUY",
+      "confidence": 50,
+      "investment_thesis": "This ticker is too long to be valid"
+    },
+    {
+      "ticker": "123",
+      "company_name": "Numeric Ticker",
+      "action": "SELL",
+      "confidence": 60,
+      "investment_thesis": "Numeric tickers not allowed"
+    }
+  ]
+}

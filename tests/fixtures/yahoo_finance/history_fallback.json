@@ -1,0 +1,12 @@
+{
+  "description": "Sample history data when fast_info and info fail",
+  "history": {
+    "columns": ["Open", "High", "Low", "Close", "Volume"],
+    "data": [
+      [100.50, 102.30, 100.20, 101.75, 5000000],
+      [101.80, 103.50, 101.60, 103.25, 4800000],
+      [103.30, 104.00, 102.90, 103.88, 5200000]
+    ],
+    "last_close": 103.88
+  }
+}

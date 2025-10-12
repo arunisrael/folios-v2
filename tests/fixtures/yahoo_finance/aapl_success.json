@@ -1,0 +1,24 @@
+{
+  "fast_info": {
+    "last_price": 175.43,
+    "last_volume": 52431900,
+    "market_cap": 2748000000000,
+    "shares": 15634199552
+  },
+  "info": {
+    "symbol": "AAPL",
+    "shortName": "Apple Inc.",
+    "longName": "Apple Inc.",
+    "currentPrice": 175.43,
+    "regularMarketPrice": 175.43,
+    "regularMarketOpen": 174.24,
+    "regularMarketDayHigh": 176.15,
+    "regularMarketDayLow": 173.88,
+    "regularMarketVolume": 52431900,
+    "marketCap": 2748000000000,
+    "fiftyTwoWeekLow": 164.08,
+    "fiftyTwoWeekHigh": 199.62,
+    "currency": "USD",
+    "exchange": "NMS"
+  }
+}

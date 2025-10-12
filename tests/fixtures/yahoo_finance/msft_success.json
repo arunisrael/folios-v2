@@ -1,0 +1,24 @@
+{
+  "fast_info": {
+    "last_price": 378.91,
+    "last_volume": 21345800,
+    "market_cap": 2819000000000,
+    "shares": 7432659968
+  },
+  "info": {
+    "symbol": "MSFT",
+    "shortName": "Microsoft Corporation",
+    "longName": "Microsoft Corporation",
+    "currentPrice": 378.91,
+    "regularMarketPrice": 378.91,
+    "regularMarketOpen": 377.50,
+    "regularMarketDayHigh": 380.25,
+    "regularMarketDayLow": 376.88,
+    "regularMarketVolume": 21345800,
+    "marketCap": 2819000000000,
+    "fiftyTwoWeekLow": 309.45,
+    "fiftyTwoWeekHigh": 384.30,
+    "currency": "USD",
+    "exchange": "NMS"
+  }
+}

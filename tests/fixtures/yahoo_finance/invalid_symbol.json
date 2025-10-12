@@ -1,0 +1,10 @@
+{
+  "description": "Response for invalid or non-existent symbol",
+  "fast_info": null,
+  "info": {
+    "symbol": "INVALID123",
+    "regularMarketPrice": null,
+    "currentPrice": null
+  },
+  "error": "No data found for symbol INVALID123"
+}

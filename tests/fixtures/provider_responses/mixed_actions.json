@@ -1,0 +1,59 @@
+{
+  "analysis_summary": "Portfolio rebalancing with multiple buy and sell recommendations",
+  "overall_sentiment": "neutral",
+  "overall_confidence": 78,
+  "recommendations": [
+    {
+      "ticker": "AMD",
+      "company_name": "Advanced Micro Devices",
+      "action": "BUY",
+      "current_price": 145.20,
+      "target_price": 170.00,
+      "confidence": 82,
+      "investment_thesis": "Strong datacenter growth and market share gains from Intel",
+      "position_size_pct": 5.5,
+      "risk_factors": ["Competition", "Cyclical industry"],
+      "catalysts": ["New CPU launches", "AI chip demand"]
+    },
+    {
+      "ticker": "INTC",
+      "company_name": "Intel Corporation",
+      "action": "SELL",
+      "current_price": 45.30,
+      "target_price": 38.00,
+      "confidence": 75,
+      "investment_thesis": "Market share losses and manufacturing delays creating headwinds",
+      "position_size_pct": 0.0,
+      "risk_factors": ["Turnaround potential", "Government subsidies"],
+      "catalysts": ["Continued execution issues", "Process technology delays"]
+    },
+    {
+      "ticker": "QCOM",
+      "company_name": "Qualcomm Inc.",
+      "action": "BUY",
+      "current_price": 178.50,
+      "target_price": 195.00,
+      "confidence": 80,
+      "investment_thesis": "5G modem leadership and automotive diversification",
+      "position_size_pct": 4.0,
+      "risk_factors": ["Apple relationship", "China exposure"],
+      "catalysts": ["Automotive wins", "IoT expansion"]
+    },
+    {
+      "ticker": "MU",
+      "company_name": "Micron Technology",
+      "action": "HOLD",
+      "current_price": 92.40,
+      "target_price": 95.00,
+      "confidence": 65,
+      "investment_thesis": "Cyclical bottom forming but timing unclear",
+      "position_size_pct": 0.0,
+      "risk_factors": ["Memory cycle", "Inventory"],
+      "catalysts": ["HBM demand", "Supply discipline"]
+    }
+  ],
+  "market_context": {
+    "market_regime": "volatile",
+    "key_themes": ["AI infrastructure", "Semiconductor cycle", "Tech rotation"]
+  }
+}

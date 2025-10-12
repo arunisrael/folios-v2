@@ -1,0 +1,24 @@
+{
+  "fast_info": {
+    "last_price": 142.65,
+    "last_volume": 18934500,
+    "market_cap": 1789000000000,
+    "shares": 12540000000
+  },
+  "info": {
+    "symbol": "GOOGL",
+    "shortName": "Alphabet Inc.",
+    "longName": "Alphabet Inc.",
+    "currentPrice": 142.65,
+    "regularMarketPrice": 142.65,
+    "regularMarketOpen": 141.88,
+    "regularMarketDayHigh": 143.20,
+    "regularMarketDayLow": 141.45,
+    "regularMarketVolume": 18934500,
+    "marketCap": 1789000000000,
+    "fiftyTwoWeekLow": 121.46,
+    "fiftyTwoWeekHigh": 153.78,
+    "currency": "USD",
+    "exchange": "NMS"
+  }
+}

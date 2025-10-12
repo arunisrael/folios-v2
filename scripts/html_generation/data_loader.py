@@ -300,8 +300,9 @@ class HTMLDataLoader:
             "status": row.status,
             "opened_at": row.opened_at,
             "closed_at": row.closed_at,
+            "side": payload.get("side", "long"),  # long or short
             "quantity": payload.get("quantity", 0),
-            "avg_entry_price": payload.get("avg_entry_price"),
+            "avg_entry_price": payload.get("average_price"),  # Note: stored as "average_price" in DB
             "payload": payload,
         }
 
@@ -322,6 +323,17 @@ class HTMLDataLoader:
         elif payload is None:
             payload = {}
 
+        # Extract rationale from metadata if it exists
+        metadata = payload.get("metadata", {})
+        if isinstance(metadata, str):
+            import json
+            try:
+                metadata = json.loads(metadata) if metadata else {}
+            except Exception:
+                metadata = {}
+
+        rationale = metadata.get("rationale", "") if isinstance(metadata, dict) else ""
+
         return {
             "id": row.id,
             "strategy_id": row.strategy_id,
@@ -331,10 +343,27 @@ class HTMLDataLoader:
             "placed_at": row.placed_at,
             "action": payload.get("action"),  # BUY, SELL, etc.
             "quantity": payload.get("quantity", 0),
-            "price": payload.get("price"),
-            "rationale": payload.get("rationale", ""),
+            "price": payload.get("limit_price"),  # Price is stored as limit_price
+            "rationale": rationale,
             "payload": payload,
         }
+
+    def load_all_strategy_provider_pairs(self) -> list[tuple[str, str]]:
+        """Load all unique strategy+provider combinations that have requests.
+
+        Returns:
+            List of (strategy_id, provider_id) tuples
+        """
+        query = text("""
+            SELECT DISTINCT strategy_id, provider_id
+            FROM requests
+            WHERE provider_id IS NOT NULL
+            ORDER BY strategy_id, provider_id
+        """)
+
+        with self.engine.connect() as conn:
+            result = conn.execute(query)
+            return [(row.strategy_id, row.provider_id) for row in result]
 
 
 __all__ = ["HTMLDataLoader"]

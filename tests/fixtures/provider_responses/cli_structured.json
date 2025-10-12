@@ -1,0 +1,69 @@
+{
+  "analysis_summary": "Based on Q3 2025 market analysis, this strategy identifies high-conviction tech growth opportunities with strong fundamentals.",
+  "overall_sentiment": "bullish",
+  "overall_confidence": 85,
+  "recommendations": [
+    {
+      "ticker": "NVDA",
+      "company_name": "NVIDIA Corporation",
+      "action": "BUY",
+      "current_price": 155.25,
+      "target_price": 185.00,
+      "confidence": 85,
+      "investment_thesis": "NVIDIA's dominance in the AI accelerator market remains unmatched, with strong Q3 2025 earnings demonstrating sustained data center demand.",
+      "key_metrics": {
+        "pe_ratio": 45.5,
+        "pb_ratio": 28.0,
+        "debt_to_equity": 0.25,
+        "roe": 65.2
+      },
+      "position_size_pct": 8.0,
+      "risk_factors": [
+        "Increased competition from in-house chip designs",
+        "Export control risks"
+      ],
+      "catalysts": [
+        "New GPU platform adoption",
+        "Expansion into AI automotive"
+      ]
+    },
+    {
+      "ticker": "AAPL",
+      "company_name": "Apple Inc.",
+      "action": "SELL",
+      "current_price": 175.50,
+      "target_price": 160.00,
+      "confidence": 75,
+      "investment_thesis": "Taking profits after strong run-up. Market saturation concerns in key product lines and margin pressure from competitive pricing.",
+      "key_metrics": {
+        "pe_ratio": 28.5,
+        "pb_ratio": 34.7
+      },
+      "position_size_pct": 5.0,
+      "risk_factors": [
+        "Brand loyalty may support valuation",
+        "Services growth could accelerate"
+      ],
+      "catalysts": [
+        "Product refresh cycle weakening",
+        "China market headwinds"
+      ]
+    }
+  ],
+  "market_context": {
+    "market_regime": "bull_market",
+    "key_themes": [
+      "AI infrastructure buildout",
+      "Profit-taking in mega-cap tech"
+    ],
+    "macro_risks": [
+      "Interest rate uncertainty",
+      "Geopolitical tensions"
+    ]
+  },
+  "portfolio_considerations": {
+    "total_allocation": 13.0,
+    "diversification_notes": "Balanced exposure to growth and value",
+    "rebalancing_guidance": "Review quarterly or on 10% position moves"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "recommendations": [
+    {
+      "ticker": "MSFT",
+      "company_name": "Microsoft Corporation",
+      "action": "BUY",
+      "current_price": 380.50,
+      "target_price": 425.00,
+      "confidence": 85,
+      "investment_thesis": "Cloud computing leader with Azure growing 30%+ YoY. AI integration across product suite positioning for multi-year growth.",
+      "position_size_pct": 6.5,
+      "risk_factors": [
+        "Regulatory scrutiny",
+        "Competition from AWS and Google Cloud"
+      ],
+      "catalysts": [
+        "AI monetization acceleration",
+        "Enterprise cloud migration"
+      ]
+    }
+  ],
+  "analysis_notes": "Strong fundamentals across board"
+}

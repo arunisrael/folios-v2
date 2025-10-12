@@ -1,0 +1,42 @@
+{
+  "provider": "gemini",
+  "exit_code": 0,
+  "cli_output": {
+    "response": "Analysis complete",
+    "stats": {
+      "tokens": {
+        "prompt": 1000,
+        "candidates": 500
+      }
+    }
+  },
+  "structured": {
+    "analysis_summary": "Defensive strategy focusing on dividend aristocrats with recession protection.",
+    "overall_sentiment": "neutral",
+    "overall_confidence": 70,
+    "recommendations": [
+      {
+        "ticker": "JNJ",
+        "company_name": "Johnson & Johnson",
+        "action": "BUY",
+        "current_price": 162.30,
+        "target_price": 175.00,
+        "confidence": 80,
+        "investment_thesis": "Healthcare giant with diversified revenue streams and consistent dividend growth. Defensive qualities attractive in uncertain markets.",
+        "key_metrics": {
+          "pe_ratio": 15.2,
+          "dividend_yield": 3.1
+        },
+        "position_size_pct": 7.5,
+        "risk_factors": [
+          "Litigation risks",
+          "Patent expirations"
+        ],
+        "catalysts": [
+          "New drug approvals",
+          "Dividend increase"
+        ]
+      }
+    ]
+  }
+}
