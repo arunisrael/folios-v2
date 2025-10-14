@@ -15,10 +15,10 @@ from folios_v2.providers.exceptions import ExecutionError
 
 @dataclass(slots=True)
 class AnthropicCliExecutor(CliExecutor):
-    """Execute Anthropic research via the local Claude Code CLI."""
+    """Execute Anthropic research via the Claude CLI."""
 
     base_command: Sequence[str] = (
-        "/Users/arun/.claude/local/claude",
+        "claude",
         "-p",
         "--output-format",
         "json",
@@ -42,10 +42,17 @@ class AnthropicCliExecutor(CliExecutor):
         prompt_path.write_text(prompt, encoding="utf-8")
 
         command = [*self.base_command, prompt]
+
+        # Ensure environment variables are passed to subprocess
+        # This is needed for non-interactive mode authentication
+        import os
+        env = os.environ.copy()
+
         process = await asyncio.create_subprocess_exec(
             *command,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            env=env,  # Explicitly pass environment
         )
         stdout, stderr = await process.communicate()
 

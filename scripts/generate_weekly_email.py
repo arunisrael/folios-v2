@@ -24,9 +24,9 @@ from pathlib import Path
 
 from sqlalchemy import create_engine
 
-from scripts.html.data_loader import HTMLDataLoader
-from scripts.html.market_data import MarketDataService
-from scripts.html.templates import render_weekly_email
+from scripts.html_generation.data_loader import HTMLDataLoader
+from scripts.html_generation.market_data import MarketDataService
+from scripts.html_generation.templates import render_weekly_email
 
 
 def _render_popular_holdings_html(

@@ -35,6 +35,7 @@ async def _submit_batch_requests(
         if strategy_id:
             # Submit for specific strategy
             from uuid import UUID
+
             from folios_v2.domain.types import StrategyId
 
             sid = StrategyId(UUID(strategy_id))

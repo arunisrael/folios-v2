@@ -1,0 +1,1 @@
+/Users/arun/apps/folios-v2/.venv/bin/python: No module named pytest

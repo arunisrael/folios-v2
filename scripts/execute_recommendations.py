@@ -225,7 +225,8 @@ async def _execute_recommendations(
             allocation_percent = rec.get("allocation_percent") or rec.get(
                 "position_size_pct", 0
             )
-            rationale = rec.get("rationale", "")
+            # Support both rationale field names: rationale and investment_thesis
+            rationale = rec.get("rationale") or rec.get("investment_thesis", "")
 
             if not symbol:
                 typer.echo(f"Skipping recommendation with no ticker: {rec}", err=True)

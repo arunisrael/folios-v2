@@ -1,6 +1,10 @@
 # Folios v2
 
-Strictly typed rebuild of the Folios trading workbench. The project implements the redesigned architecture outlined in `../folios-py/docs/redesign/` with a focus on declarative provider plugins, unified request lifecycles, and a cron-friendly weekly cadence.
+Strictly typed rebuild of the Folios trading workbench. Folios v2 ships a declarative
+provider system, async batch+CLI runtimes, and a weekly research cadence backed by a
+SQLite persistence layer. The implementation follows the redesign proposals in
+`../folios-py/docs/redesign/` but now uses real OpenAI, Gemini, and Anthropic
+integrations with optional local fallbacks.
 
 ## Tooling
 - Python >= 3.11
@@ -21,6 +25,10 @@ make harvest                # Harvest completed OpenAI batch requests
 make execute                # Execute trade recommendations
 make status                 # Show request status
 
+# Single-strategy orchestration
+uv run python scripts/run_single_strategy.py <STRATEGY_ID> \
+  --batch openai --cli gemini,anthropic
+
 # Gemini batch operations (24+ hour processing time)
 make gemini-submit          # Submit one Gemini batch request
 make gemini-status          # Check Gemini batch job status
@@ -34,16 +42,49 @@ make check-batch-status     # Show all batch job statuses
 make help                   # Show all available commands
 ```
 
-## Project Layout (in progress)
+## Provider Credentials
+
+All integrations are configured via environment variables. Defaults live in
+`src/folios_v2/config.py`; override them in `.env` before running commands.
+
+| Variable | Purpose | Notes |
+| --- | --- | --- |
+| `OPENAI_API_KEY` | Live `/v1/batches` submissions | Optional when local fallback enabled |
+| `GEMINI_API_KEY` | Gemini batch jobs | Required for 24h batch pipeline |
+| `ANTHROPIC_API_KEY` | Direct Anthropic API executor | Consumed by `AnthropicDirectExecutor` |
+| `FINNHUB_API_KEY` | Enables Finnhub screeners | Optional |
+| `FMP_API_KEY` | Enables FMP screeners | Optional |
+| `FOLIOS_DATABASE_URL` | SQLite connection string | Defaults to `sqlite+aiosqlite:///folios_v2.db` |
+
+When an API key is missing and `FOLIOS_LOCAL_BATCH_FALLBACK` remains enabled, the
+provider gracefully falls back to the JSON simulator for offline development.
+
+## Project Layout
+
 ```
 folios-v2/
-├── docs/               # Requirements capture and architecture notes
-├── scripts/            # Operational helpers (harvest, submit_stale_strategies)
-├── src/folios_v2/      # Application source (domain, providers, runtime, orchestration, cli)
-└── tests/              # Pytest suites
+├── artifacts/                  # Provider artifacts grouped by request/task id
+├── docs/                       # Runbooks, architecture notes, integration reports
+├── scripts/                    # Operational helpers (submit, harvest, execute, html)
+├── src/folios_v2/              # Application source (domain, providers, runtime, orchestration, cli)
+├── tests/                      # Pytest suites
+├── public/                     # Generated HTML + email outputs
+├── data/                       # Supporting JSON fixtures (e.g., screener mappings)
+└── tmp_for_deletion/           # Legacy placeholders slated for removal
 ```
 
-Implementation proceeds in phases; see `docs/requirements.md` for the captured scope and design targets.
+Implementation status, requirements, and migration notes live in the docs listed below.
+
+## Key Documentation
+
+- `docs/COMMAND_REFERENCE.md` – end-to-end command cheatsheet for day-to-day ops.
+- `docs/full_lifecycle_workflow.md` – submission → harvest → portfolio walkthrough.
+- `docs/portfolio_execution.md` – explains how recommendations become orders.
+- `docs/GEMINI_BATCH_FIX_SUMMARY.md` – current Gemini batch pipeline status.
+- `docs/screener_configurations.md` – strategy → screener mapping details.
+
+New contributors should also review `docs/AGENT_ONBOARDING.md` (created alongside this
+README update) for a condensed orientation.
 
 ## Batch Provider Configuration
 

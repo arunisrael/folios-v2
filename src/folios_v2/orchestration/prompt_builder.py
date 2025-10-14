@@ -39,7 +39,7 @@ _CLI_STRUCTURED_SCHEMA = (
     "      {\n"
     "        \"ticker\": string,\n"
     "        \"company_name\": string,\n"
-    "        \"action\": one of [\"BUY\", \"SELL\", \"HOLD\"],\n"
+    "        \"action\": one of [\"BUY\", \"SELL\", \"SELL_SHORT\", \"HOLD\"],\n"
     "        \"current_price\": number,\n"
     "        \"target_price\": number,\n"
     "        \"confidence\": integer 0-100,\n"
@@ -56,6 +56,7 @@ _CLI_STRUCTURED_SCHEMA = (
     "    \"portfolio_considerations\": { optional fields \"total_allocation\", "
     "\"diversification_notes\", \"rebalancing_guidance\" }\n"
     "  }\n"
+    "- IMPORTANT: Use \"SELL_SHORT\" action for short selling positions (not \"SELL\").\n"
     "- If information is unavailable, use nulls or empty arrays; never invent data or "
     "change the schema.\n"
 )

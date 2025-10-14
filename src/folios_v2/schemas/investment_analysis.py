@@ -42,8 +42,11 @@ INVESTMENT_ANALYSIS_SCHEMA = {
                         "company_name": {"type": "string", "description": "Full company name"},
                         "action": {
                             "type": "string",
-                            "enum": ["BUY", "SELL", "HOLD"],
-                            "description": "Recommended action for this stock",
+                            "enum": ["BUY", "SELL", "SELL_SHORT", "HOLD"],
+                            "description": (
+                                "Recommended action for this stock. "
+                                "Use SELL_SHORT for short selling positions."
+                            ),
                         },
                         "current_price": {
                             "type": "number",
@@ -173,7 +176,7 @@ SIMPLE_INVESTMENT_SCHEMA = {
                     "type": "object",
                     "properties": {
                         "ticker": {"type": "string", "pattern": "^[A-Z]{1,5}$"},
-                        "action": {"type": "string", "enum": ["BUY", "SELL", "HOLD"]},
+                        "action": {"type": "string", "enum": ["BUY", "SELL", "SELL_SHORT", "HOLD"]},
                         "confidence": {"type": "integer", "minimum": 0, "maximum": 100},
                         "rationale": {"type": "string"},
                     },

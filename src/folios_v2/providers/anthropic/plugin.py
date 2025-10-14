@@ -12,6 +12,7 @@ from folios_v2.providers.exceptions import ParseError
 from folios_v2.providers.models import ExecutionTaskContext
 
 from .cli_executor import AnthropicCliExecutor
+from .direct_executor import AnthropicDirectExecutor
 
 
 class AnthropicResultParser(ResultParser):
@@ -67,7 +68,7 @@ ANTHROPIC_PLUGIN = ProviderPlugin(
     throttle=ProviderThrottle(max_concurrent=1, requests_per_minute=30),
     serializer=None,
     batch_executor=None,
-    cli_executor=AnthropicCliExecutor(),
+    cli_executor=AnthropicDirectExecutor(),  # Use direct API instead of CLI
     parser=AnthropicResultParser(),
 )
 

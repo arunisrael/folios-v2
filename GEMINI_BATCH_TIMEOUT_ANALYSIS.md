@@ -1,7 +1,11 @@
 # Gemini Batch Processing Timeout Analysis
 
+> **Status (2025-10-09):** Fixed. See `docs/GEMINI_BATCH_FIX_SUMMARY.md` for the
+> implemented solution. This analysis is retained for historical debugging
+> context.
+
 ## Issue Summary
-The Gemini batch request harvesting is **failing due to HTTP timeout errors** during the batch submission phase.
+The Gemini batch request harvesting was **failing due to HTTP timeout errors** during the batch submission phase.
 
 ## Error Details
 
@@ -34,9 +38,9 @@ timeout = 0.3  # ← This is the problem!
 - `GeminiBatchExecutor` is initialized with `request_timeout=300.0` (5 minutes)
 - Located in: `src/folios_v2/providers/gemini/batch.py:131-137`
 
-### Actual
-- Google genai client is using `timeout=0.3` seconds
-- This timeout is too short for any meaningful API request to complete
+### Actual (pre-fix)
+- Google genai client used `timeout=0.3` seconds
+- This timeout was too short for any meaningful API request to complete
 
 ## Request Being Processed
 

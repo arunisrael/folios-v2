@@ -13,15 +13,19 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import sys
 from decimal import Decimal
 from pathlib import Path
 
 from sqlalchemy import create_engine
 
-from scripts.html.data_loader import HTMLDataLoader
-from scripts.html.market_data import MarketDataService
-from scripts.html.portfolio_engine import PortfolioEngine
-from scripts.html.templates import (
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent))
+
+from html_generation.data_loader import HTMLDataLoader
+from html_generation.market_data import MarketDataService
+from html_generation.portfolio_engine import PortfolioEngine
+from html_generation.templates import (
     render_activity_feed,
     render_leaderboard,
     render_strategy_detail,
@@ -102,9 +106,14 @@ async def main() -> None:
         positions_by_strategy[sid] = positions_by_provider
         trade_history_by_strategy[sid] = trade_history_by_provider
 
+    # Load all strategy+provider pairs from requests
+    print("Loading strategy+provider pairs from requests...")
+    all_pairs = loader.load_all_strategy_provider_pairs()
+    print(f"Found {len(all_pairs)} strategy+provider pairs with requests")
+
     # Render leaderboard
     print("Rendering leaderboard...")
-    index_html = render_leaderboard(strategies, portfolio_accounts_by_strategy)
+    index_html = render_leaderboard(strategies, portfolio_accounts_by_strategy, all_pairs)
     (out_dir / "index.html").write_text(index_html, encoding="utf-8")
     print(f"  ✓ {out_dir / 'index.html'}")
 
