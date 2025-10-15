@@ -17,74 +17,57 @@ This document describes the complete end-to-end workflow for executing a strateg
 
 ## Workflow Steps
 
-### 1. Strategy Submission
+### 1. Plan & Enqueue Strategies
 
-Use the new unified script to submit a strategy across multiple providers:
+New batched workflows begin by identifying which strategies need research. Run:
 
 ```bash
-uv run python scripts/run_single_strategy.py \
-  1dff269f-412a-4c74-bca1-e9d3ab213d6e \
-  --batch openai \
-  --cli gemini,anthropic
+make plan-strategies
 ```
 
-**What happens:**
-- **OpenAI Batch**: Creates request in database, submits to OpenAI Batch API, receives job ID, returns immediately (<1s)
-- **Gemini CLI**: Creates request in database, executes the `gemini` CLI binary, writes artifacts (≈5–10 min)
-- **Anthropic Direct**: Creates request in database, calls the Anthropic SDK, writes artifacts immediately (≈30–60s)
+This surfaces active strategies lacking recent submissions. To enqueue batch work for all (or specific) providers:
 
-**Database entries created:**
-- 3 rows in `requests` table (one per provider)
-- 3 rows in `execution_tasks` table (one per provider)
+```bash
+make enqueue-strategies PROVIDERS=openai,gemini
+```
 
-**Request IDs (from test):**
-- OpenAI: `ba042081-af1b-4e84-8ef0-70d4c9b0ec55`
-- Gemini: `744ca953-219a-4238-9427-c528580d7393`
-- Anthropic: `<anthropic-request-id>` (typically succeeds within the same run)
+At this point only database rows are created (no provider traffic yet). Each provider/strategy pair receives one `requests` row and one `execution_tasks` row with lifecycle state `pending`.
 
 ---
 
-### 2. Check Status
+### 2. Submit Batch Jobs
 
-Monitor the status of all pending requests:
+Queue serialization has prepared payloads, but nothing has been sent upstream yet. Execute:
 
 ```bash
-make status
+make submit-batch-jobs PROVIDERS=openai,gemini
 ```
 
-**Example output:**
-```
-Pending Requests: 8
-  - ba042081-af1b-4e84-8ef0-70d4c9b0ec55: openai (batch) [PENDING - waiting for OpenAI]
-  - 744ca953-219a-4238-9427-c528580d7393: gemini (cli) [PENDING - CLI completed, needs harvest]
-  - <anthropic-request-id>: anthropic (cli) [PENDING - CLI completed, needs harvest]
-```
-
-**States:**
-- **Batch requests**: Remain `pending` until OpenAI completes processing (~24h)
-- **CLI/direct requests**: Remain `pending` until harvested (execution already finished)
+This command serializes payloads (if absent), hits each provider’s batch API, stores the returned `provider_job_id`, and moves requests/tasks into `running`.
 
 ---
 
-### 3. Harvest Results
+### 3. Poll Provider Status
 
-Process completed requests and parse their results:
+Long-running providers (OpenAI, Gemini) remain in `running` until we observe completion. Poll them periodically:
 
 ```bash
-make harvest
+make poll-batch-status PROVIDERS=openai,gemini
 ```
 
-**What happens:**
-- Scans `requests` table for `pending` requests
-- For **batch requests**:
-  - Checks if the provider job has completed (polling OpenAI/Gemini APIs)
-  - On completion, downloads results into `artifacts/<request>/<task>/`
-  - Parses JSONL results into `parsed.json`
-  - Updates request to `succeeded`
-- For **CLI/direct requests**:
-  - Uses existing artifacts (no re-execution)
-  - Parses `structured.json` / `response.json`
-  - Updates request to `succeeded`
+Tasks move to `awaiting_results` once a provider reports `completed`. Failures or cancellations flip the lifecycle to `failed`, capturing poll metadata in `execution_tasks.metadata`.
+
+### 4. Harvest Results
+
+After jobs reach `awaiting_results`, download artifacts and parse them:
+
+```bash
+make harvest-batch-results
+```
+
+**What happens now:**
+- CLI/direct requests are parsed immediately and transition to `succeeded`.
+- Batch requests with `awaiting_results` download provider output, store the files under `artifacts/<request>/<task>/`, write `parsed.json`, and mark both task and request as `succeeded`.
 
 **Files created per request:**
 ```
@@ -150,7 +133,7 @@ cat artifacts/<anthropic-request-id>/*/parsed.json | jq '.recommendations'
 Convert recommendations into orders and positions:
 
 ```bash
-# Execute OpenAI recommendations
+# Execute OpenAI recommendations (single request)
 uv run python scripts/execute_recommendations.py \
   ba042081-af1b-4e84-8ef0-70d4c9b0ec55 \
   1dff269f-412a-4c74-bca1-e9d3ab213d6e \
@@ -192,6 +175,14 @@ uv run python scripts/execute_recommendations.py \
 - Row updated/inserted in `portfolio_accounts` table
 
 ---
+
+For bulk execution across all completed requests, run:
+
+```bash
+make execute-ready PROVIDERS=openai,gemini BALANCE=100000
+```
+
+This helper loops through every `succeeded` research request, loads the parsed artifacts, and applies the portfolio execution engine sequentially.
 
 ### 6. Verify Portfolios
 
@@ -255,61 +246,37 @@ ORDER BY placed_at DESC
 
 | Step | Action | Duration | State |
 |------|--------|----------|-------|
-| 1 | Submit OpenAI batch | < 1 sec | Request created, job submitted |
-| 1 | Execute Gemini CLI | 5-10 min | Request created, execution completes |
-| 1 | Execute Anthropic CLI | 5-10 min | Request created, execution completes |
-| 2 | Check status | < 1 sec | Shows all pending requests |
-| 3 | Harvest CLI results | < 5 sec | CLI requests → succeeded |
-| 3 | Wait for OpenAI batch | ~24 hours | Batch request still pending |
-| 3 | Harvest OpenAI results | < 10 sec | Batch request → succeeded |
-| 4 | Review recommendations | < 1 min | Manual inspection |
-| 5 | Execute trades (all) | < 2 min | Orders + positions created |
-| 6 | Verify portfolios | < 1 min | Check database tables |
+| 1 | `make plan-strategies` | < 1 sec | Identifies stale strategies |
+| 1 | `make enqueue-strategies` | < 1 sec | Requests/tasks created (`pending`) |
+| 2 | `make submit-batch-jobs` | < 5 sec | Provider job IDs stored (`running`) |
+| 3 | `make poll-batch-status` | < 1 sec | Jobs transition to `awaiting_results` |
+| 4 | `make harvest-batch-results` | Depends on download | Requests → `succeeded` |
+| 5 | `make execute-ready` | < 2 min | Orders, positions, portfolios updated |
+| 6 | Manual verification | < 1 min | Inspect database tables |
 
 ---
 
 ## Complete Command Sequence
 
 ```bash
-# 1. Submit strategy
-uv run python scripts/run_single_strategy.py \
-  1dff269f-412a-4c74-bca1-e9d3ab213d6e \
-  --batch openai \
-  --cli gemini,anthropic
+# 1. Identify and enqueue strategies
+make plan-strategies
+make enqueue-strategies PROVIDERS=openai,gemini
 
-# 2. Check status (anytime)
+# 2. Submit provider jobs
+make submit-batch-jobs PROVIDERS=openai,gemini
+
+# 3. Poll status periodically (repeat until completed)
+make poll-batch-status PROVIDERS=openai,gemini
+
+# 4. Harvest results when jobs complete
+make harvest-batch-results
+
+# 5. Execute portfolios for completed research
+make execute-ready PROVIDERS=openai,gemini BALANCE=100000
+
+# 6. Inspect status/portfolios as needed
 make status
-
-# 3. Harvest CLI results (after 10 min)
-make harvest
-
-# 4. Review Gemini recommendations
-cat artifacts/*/*/parsed.json | jq '.recommendations'
-
-# 5. Execute Gemini trades
-uv run python scripts/execute_recommendations.py \
-  <gemini-request-id> \
-  1dff269f-412a-4c74-bca1-e9d3ab213d6e \
-  --provider-id gemini
-
-# 6. Execute Anthropic trades
-uv run python scripts/execute_recommendations.py \
-  <anthropic-request-id> \
-  1dff269f-412a-4c74-bca1-e9d3ab213d6e \
-  --provider-id anthropic
-
-# 7. Wait ~24 hours for OpenAI batch...
-
-# 8. Harvest OpenAI results (after ~24h)
-make harvest
-
-# 9. Execute OpenAI trades
-uv run python scripts/execute_recommendations.py \
-  ba042081-af1b-4e84-8ef0-70d4c9b0ec55 \
-  1dff269f-412a-4c74-bca1-e9d3ab213d6e \
-  --provider-id openai
-
-# 10. Verify final portfolios
 sqlite3 folios_v2.db "SELECT * FROM portfolio_accounts WHERE strategy_id = '1dff269f-412a-4c74-bca1-e9d3ab213d6e'"
 ```
 

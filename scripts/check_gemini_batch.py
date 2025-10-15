@@ -10,21 +10,28 @@ from pathlib import Path
 
 import typer
 from dotenv import load_dotenv
+from google import genai
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import text
-
-# Load .env file
-_env_path = Path(__file__).parent.parent / ".env"
-if _env_path.exists():
-    load_dotenv(_env_path)
-
-from google import genai
 
 from folios_v2.cli.deps import get_container
 
 app = typer.Typer(help="Check Gemini batch request status")
 console = Console()
+
+
+def _format_timestamp(value: object) -> str:
+    if not value:
+        return "[dim]-[/dim]"
+    if isinstance(value, str):
+        return value[:19]
+    return str(value)
+
+
+_env_path = Path(__file__).parent.parent / ".env"
+if _env_path.exists():
+    load_dotenv(_env_path)
 
 
 async def _get_local_batch_status() -> list[dict]:
@@ -39,6 +46,8 @@ async def _get_local_batch_status() -> list[dict]:
                 et.lifecycle_state,
                 json_extract(et.payload, '$.provider_job_id') as provider_job_id,
                 json_extract(et.payload, '$.metadata.artifact_dir') as artifact_dir,
+                json_extract(et.payload, '$.metadata.last_poll_status') as last_poll_status,
+                json_extract(et.payload, '$.metadata.last_polled_at') as last_polled_at,
                 et.created_at,
                 et.updated_at,
                 et.started_at,
@@ -64,14 +73,16 @@ async def _get_local_batch_status() -> list[dict]:
                 "lifecycle_state": row[1],
                 "provider_job_id": row[2],
                 "artifact_dir": row[3],
-                "created_at": row[4],
-                "updated_at": row[5],
-                "started_at": row[6],
-                "completed_at": row[7],
-                "request_id": row[8],
-                "provider_id": row[9],
-                "strategy_id": row[10],
-                "strategy_name": row[11],
+                "last_poll_status": row[4],
+                "last_polled_at": row[5],
+                "created_at": row[6],
+                "updated_at": row[7],
+                "started_at": row[8],
+                "completed_at": row[9],
+                "request_id": row[10],
+                "provider_id": row[11],
+                "strategy_id": row[12],
+                "strategy_name": row[13],
             })
 
         return results
@@ -127,18 +138,27 @@ def local() -> None:
         table.add_column("Provider Job ID", style="yellow", no_wrap=False)
         table.add_column("Created", style="blue")
         table.add_column("Started", style="blue")
+        table.add_column("Last Poll Status", style="cyan")
+        table.add_column("Last Polled At", style="blue")
 
         for task in tasks:
             provider_job_id = task["provider_job_id"] or "[dim]not submitted[/dim]"
-            started = task["started_at"] or "[dim]-[/dim]"
+            poll_status = task["last_poll_status"] or "[dim]-[/dim]"
+            provider_display = (
+                provider_job_id[:50]
+                if provider_job_id != "[dim]not submitted[/dim]"
+                else provider_job_id
+            )
 
             table.add_row(
                 task["task_id"][:36],
                 task["strategy_name"] or task["strategy_id"][:36],
                 task["lifecycle_state"],
-                provider_job_id if provider_job_id == "[dim]not submitted[/dim]" else provider_job_id[:50],
-                task["created_at"][:19] if task["created_at"] else "-",
-                started[:19] if isinstance(started, str) and started != "[dim]-[/dim]" else started,
+                provider_display,
+                _format_timestamp(task["created_at"]),
+                _format_timestamp(task["started_at"]),
+                poll_status,
+                _format_timestamp(task["last_polled_at"]),
             )
 
         console.print(table)
@@ -177,11 +197,12 @@ def status(
                     if hasattr(create_time, 'timestamp'):
                         ts = create_time.timestamp()
                         dt = datetime.fromtimestamp(ts, tz=UTC)
-                        console.print(f"[bold]Created:[/bold] {dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+                        created_label = dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+                        console.print(f"[bold]Created:[/bold] {created_label}")
 
-            except Exception as e:
-                console.print(f"[red]Error: {e}[/red]")
-                raise typer.Exit(code=1)
+            except Exception as exc:
+                console.print(f"[red]Error: {exc}[/red]")
+                raise typer.Exit(code=1) from exc
         else:
             # Check all jobs from local DB
             tasks = await _get_local_batch_status()
@@ -191,7 +212,9 @@ def status(
                 console.print("[yellow]No submitted Gemini batch jobs found[/yellow]")
                 return
 
-            console.print(f"[cyan]Checking status for {len(submitted_tasks)} Gemini batch jobs...[/cyan]\n")
+            console.print(
+                f"[cyan]Checking status for {len(submitted_tasks)} Gemini batch jobs...[/cyan]\n"
+            )
 
             table = Table(title="Gemini Batch Jobs Status")
             table.add_column("Local ID", style="cyan", no_wrap=False)
@@ -252,28 +275,27 @@ def details(
                 # Try to serialize the job object
                 job_dict = {}
                 for attr in dir(job):
-                    if not attr.startswith('_'):
-                        try:
-                            value = getattr(job, attr)
-                            # Skip methods
-                            if callable(value):
-                                continue
-                            # Convert to JSON-serializable format
-                            if hasattr(value, '__dict__'):
-                                job_dict[attr] = str(value)
-                            else:
-                                job_dict[attr] = value
-                        except:
-                            pass
+                    if attr.startswith("_"):
+                        continue
+                    try:
+                        value = getattr(job, attr)
+                    except AttributeError:
+                        continue
+                    if callable(value):
+                        continue
+                    if hasattr(value, "__dict__"):
+                        job_dict[attr] = str(value)
+                    else:
+                        job_dict[attr] = value
 
                 return job_dict
 
             job_dict = await asyncio.to_thread(_fetch)
             console.print(json.dumps(job_dict, indent=2, default=str))
 
-        except Exception as e:
-            console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(code=1)
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
+            raise typer.Exit(code=1) from exc
 
     asyncio.run(_run())
 

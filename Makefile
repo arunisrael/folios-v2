@@ -1,10 +1,11 @@
 UV ?= uv
 DB ?= folios_v2.db
 PROVIDERS ?= openai,gemini,anthropic
+BALANCE ?= 100000
 
 .PHONY: format lint lint-fix typecheck test coverage check build ci
-.PHONY: list-strategies submit harvest execute status workflow
-.PHONY: submit-batch submit-cli submit-stale test-cli
+.PHONY: list-strategies plan-strategies enqueue-strategies submit-batch submit-batch-jobs poll-batch-status harvest-batch-results harvest execute status workflow
+.PHONY: submit-stale test-cli execute-ready
 .PHONY: gemini-submit gemini-status gemini-harvest check-batch-status
 .PHONY: generate-html generate-email publish-html
 
@@ -42,10 +43,16 @@ list-strategies:
 	@echo "=================="
 	$(UV) run python -m folios_v2.cli list-strategies
 
+plan-strategies:
+	@echo "Planning strategies needing research..."
+	$(UV) run python scripts/plan_strategies.py --providers "$(PROVIDERS)"
+
 # Submit batch requests for all active strategies
-submit-batch:
-	@echo "Submitting batch requests to providers: $(PROVIDERS)"
+enqueue-strategies:
+	@echo "Enqueueing batch requests to providers: $(PROVIDERS)"
 	$(UV) run python scripts/submit_batch_requests.py --providers "$(PROVIDERS)"
+
+submit-batch: enqueue-strategies
 
 # Submit batch requests for a specific strategy
 submit-strategy:
@@ -53,15 +60,29 @@ submit-strategy:
 	@echo "Submitting batch request for strategy: $(STRATEGY_ID)"
 	$(UV) run python scripts/submit_batch_requests.py --strategy-id "$(STRATEGY_ID)" --providers "$(PROVIDERS)"
 
+submit-batch-jobs:
+	@echo "Submitting provider jobs for pending batch requests..."
+	$(UV) run python scripts/submit_batch_jobs.py --providers "$(PROVIDERS)"
+
+poll-batch-status:
+	@echo "Polling provider status for running batch jobs..."
+	$(UV) run python scripts/poll_batch_status.py --providers "$(PROVIDERS)"
+
 # Harvest completed requests and process results
-harvest:
-	@echo "Harvesting completed requests..."
+harvest-batch-results:
+	@echo "Harvesting batch and CLI results..."
 	$(UV) run python scripts/harvest.py
+
+harvest: harvest-batch-results
 
 # Execute recommendations (place trades)
 execute:
 	@echo "Executing recommendations..."
 	$(UV) run python scripts/execute_recommendations.py
+
+execute-ready:
+	@echo "Executing ready portfolios..."
+	$(UV) run python scripts/execute_ready.py --providers "$(PROVIDERS)" --initial-balance $(BALANCE)
 
 # Show status of pending/completed requests
 status:
@@ -79,17 +100,20 @@ workflow:
 	@echo "Running complete workflow: submit -> harvest -> execute"
 	@echo "========================================================"
 	@echo
-	@echo "[1/3] Submitting batch requests..."
-	@make submit-batch PROVIDERS="$(PROVIDERS)"
+	@echo "[1/5] Enqueueing batch requests..."
+	@make enqueue-strategies PROVIDERS="$(PROVIDERS)"
 	@echo
-	@echo "[2/3] Waiting 30 seconds for processing..."
-	@sleep 30
+	@echo "[2/5] Submitting provider jobs..."
+	@make submit-batch-jobs PROVIDERS="$(PROVIDERS)"
 	@echo
-	@echo "[3/3] Harvesting results..."
-	@make harvest
+	@echo "[3/5] Polling provider status..."
+	@make poll-batch-status PROVIDERS="$(PROVIDERS)"
 	@echo
-	@echo "[4/4] Executing recommendations..."
-	@make execute
+	@echo "[4/5] Harvesting results..."
+	@make harvest-batch-results
+	@echo
+	@echo "[5/5] Executing recommendations..."
+	@make execute-ready PROVIDERS="$(PROVIDERS)" BALANCE=$(BALANCE)
 	@echo
 	@echo "Workflow complete!"
 
@@ -165,15 +189,21 @@ help:
 	@echo
 	@echo "Strategy Operations:"
 	@echo "  make list-strategies          - List all active strategies"
-	@echo "  make submit-batch             - Submit batch requests for all strategies"
+	@echo "  make plan-strategies          - Show strategies needing research"
+	@echo "  make enqueue-strategies       - Queue batch requests for all strategies"
+	@echo "  make submit-batch             - Alias for enqueue-strategies"
 	@echo "  make submit-strategy STRATEGY_ID=xxx - Submit batch for specific strategy"
-	@echo "  make harvest                  - Harvest completed requests"
-	@echo "  make execute                  - Execute trade recommendations"
+	@echo "  make submit-batch-jobs        - Submit queued batch jobs to providers"
+	@echo "  make poll-batch-status        - Poll running batch requests"
+	@echo "  make harvest-batch-results    - Download results and finalize requests"
+	@echo "  make execute-ready            - Execute portfolios for completed requests"
+	@echo "  make harvest                  - Alias for harvest-batch-results"
+	@echo "  make execute                  - Execute single request (legacy)"
 	@echo "  make status                   - Show request status"
 	@echo "  make submit-stale             - Submit stale strategies (>48h)"
 	@echo
 	@echo "Workflows:"
-	@echo "  make workflow                 - Full workflow: submit → harvest → execute"
+	@echo "  make workflow                 - Full staged workflow"
 	@echo "  make workflow-quick           - Quick test with OpenAI only"
 	@echo "  make test-cli                 - Test CLI executors with 5 strategies"
 	@echo

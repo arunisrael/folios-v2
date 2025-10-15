@@ -165,7 +165,7 @@ async def _execute_sell_short_order(
     return order, position
 
 
-async def _execute_recommendations(
+async def execute_request(
     request_id: str,
     strategy_id: str,
     provider_id: str,
@@ -369,7 +369,7 @@ def run(
     Note: Always fetches live prices from Yahoo Finance. No simulation mode.
     """
     asyncio.run(
-        _execute_recommendations(
+        execute_request(
             request_id,
             strategy_id,
             provider_id,

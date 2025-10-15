@@ -68,55 +68,31 @@ uv run python scripts/check_gemini_batch.py status batches/8s0ts89fd2d15ixi7nnyl
 uv run python scripts/check_gemini_batch.py details batches/8s0ts89fd2d15ixi7nnyl9wjffbikf20ozkk
 ```
 
-### 3. **harvest_gemini_batches.py** - Harvest Completed Batches
-```bash
-uv run python scripts/harvest_gemini_batches.py
-```
-
-This script:
-- ✅ Finds all RUNNING Gemini batch jobs
-- ✅ Polls their status via Gemini API
-- ✅ For completed jobs:
-  - Downloads results
-  - Parses JSON responses
-  - Saves parsed.json
-  - Updates task/request to SUCCEEDED
-- ✅ Shows summary of completed vs still-running jobs
-
 ## Workflow for Gemini Batches
 
-### Step 1: Submit Batches
+### Step 1: Enqueue Strategies
 ```bash
-# Submit one request
-uv run python scripts/test_gemini_submit.py
-
-# Or submit multiple (modify script to loop through pending requests)
+make enqueue-strategies PROVIDERS=gemini
 ```
+Creates pending `requests`/`execution_tasks` rows without hitting the API.
 
-### Step 2: Wait (Gemini batches take 24+ hours)
-During this time, the batch jobs are processing in Google's infrastructure.
-
-### Step 3: Check Status (Optional)
+### Step 2: Submit Provider Jobs
 ```bash
-# Check what's running
-uv run python scripts/check_gemini_batch.py status
+make submit-batch-jobs PROVIDERS=gemini
 ```
+Serializes payloads, submits to Gemini, persists the provider job ID, and marks tasks as `running`.
 
-Example output:
-```
-┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━┳━━━━━━┳━━━━━━━━┓
-┃ Local ID    ┃ Provider    ┃ Local State ┃ Remote     ┃ Total ┃ Done ┃ Failed ┃
-┃             ┃ Job ID      ┃             ┃ State      ┃       ┃      ┃        ┃
-┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━╇━━━━━━╇━━━━━━━━┩
-│ 9583a605-9… │ batches/8s… │ running     │ JOB_STATE… │ 0     │ 0    │ 0      │
-└─────────────┴─────────────┴─────────────┴────────────┴───────┴──────┴────────┘
-```
-
-### Step 4: Harvest Results (After 24+ hours)
+### Step 3: Poll Status
 ```bash
-# Run daily to collect completed batches
-uv run python scripts/harvest_gemini_batches.py
+make poll-batch-status PROVIDERS=gemini
 ```
+Updates running tasks with the latest remote state and moves them to `awaiting_results` once Gemini reports `JOB_STATE_SUCCEEDED`.
+
+### Step 4: Harvest Results
+```bash
+make harvest-batch-results
+```
+Downloads completed Gemini batches, parses JSONL payloads via the unified parser, writes `parsed.json`, and transitions the task/request to `succeeded`.
 
 Example output when job completes:
 ```
@@ -155,32 +131,34 @@ Harvest Summary:
 | **Completion Time** | Minutes to hours | 24+ hours |
 | **Timeout Setting** | Seconds | Milliseconds ⚠️ |
 | **Workflow** | Synchronous polling OK | Async (submit → poll later) |
-| **Status Check** | `check_batch_status.py` | `check_gemini_batch.py` |
-| **Harvesting** | `harvest.py` (all providers) | `harvest_gemini_batches.py` (Gemini-specific) |
+| **Status Check** | `make poll-batch-status` + `check_batch_status.py` | `make poll-batch-status` + `check_gemini_batch.py` |
+| **Harvesting** | `make harvest-batch-results` | Same `make harvest-batch-results` |
 
 ## Automation Setup
 
 ### Option 1: Cron Job (Run Daily)
 ```bash
 # Add to crontab
-0 6 * * * cd /Users/arun/apps/folios-v2 && uv run python scripts/harvest_gemini_batches.py >> logs/gemini_harvest.log 2>&1
+0 2 * * * cd /Users/arun/apps/folios-v2 && make poll-batch-status PROVIDERS=gemini >> logs/gemini_poll.log 2>&1
+30 2 * * * cd /Users/arun/apps/folios-v2 && make harvest-batch-results >> logs/gemini_harvest.log 2>&1
 ```
 
 ### Option 2: Manual Check
 ```bash
 # Check status before harvesting
-uv run python scripts/check_gemini_batch.py status
+make poll-batch-status PROVIDERS=gemini
 
 # If completed jobs exist, harvest them
-uv run python scripts/harvest_gemini_batches.py
+make harvest-batch-results
 ```
 
 ## File Locations
 
 ### Scripts
-- `/scripts/test_gemini_submit.py` - Submit individual batches
-- `/scripts/check_gemini_batch.py` - Check batch status
-- `/scripts/harvest_gemini_batches.py` - Harvest completed batches
+- `/scripts/submit_batch_jobs.py` - Submit queued batch jobs (OpenAI & Gemini)
+- `/scripts/poll_batch_status.py` - Poll remote job status
+- `/scripts/harvest.py` - Download/parse completed jobs across providers
+- `/scripts/check_gemini_batch.py` - Inspect local + remote Gemini status
 
 ### Source Code Fix
 - `/src/folios_v2/providers/gemini/batch.py` - Fixed timeout conversion
@@ -202,8 +180,8 @@ uv run python scripts/harvest_gemini_batches.py
 
 ### Issue: Job stuck in PENDING state
 **Possible Causes**:
-1. Job was submitted before the fix → Resubmit using `test_gemini_submit.py`
-2. Gemini API is slow → Normal, wait 24-48 hours
+1. Job was enqueued but not submitted → Run `make submit-batch-jobs PROVIDERS=gemini`
+2. Gemini API is slow → Normal, wait 24-48 hours and continue polling
 3. Actual error in Gemini → Check with `check_gemini_batch.py details <job_id>`
 
 ### Issue: Can't find provider_job_id
@@ -213,11 +191,10 @@ uv run python scripts/harvest_gemini_batches.py
 ## Next Steps
 
 1. **Submit remaining pending Gemini requests**
-   - Run `test_gemini_submit.py` for each pending request
-   - Or modify script to loop through all pending requests
+   - Run `make submit-batch-jobs PROVIDERS=gemini`
 
 2. **Set up daily harvesting**
-   - Add cron job or scheduler
+   - Add cron entries for `make poll-batch-status` and `make harvest-batch-results`
    - Harvest at least once per day to collect completed batches
 
 3. **Monitor results**

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -14,17 +15,25 @@ from rich.console import Console
 from rich.table import Table
 from sqlalchemy import text
 
+from folios_v2.cli.deps import get_container
+
 # Load .env file
 _env_path = Path(__file__).parent.parent / ".env"
 if _env_path.exists():
     load_dotenv(_env_path)
 
-from datetime import UTC
-
-from folios_v2.cli.deps import get_container
-
 app = typer.Typer(help="Check OpenAI batch request status")
 console = Console()
+
+
+def _format_timestamp(value: object) -> str:
+    """Render timestamps consistently for table output."""
+
+    if not value:
+        return "[dim]-[/dim]"
+    if isinstance(value, str):
+        return value[:19]
+    return str(value)
 
 
 async def _list_openai_batches(limit: int = 100) -> list[dict]:
@@ -57,7 +66,9 @@ async def _get_local_batch_status() -> list[dict]:
                 et.id as task_id,
                 et.lifecycle_state,
                 json_extract(et.payload, '$.provider_job_id') as provider_job_id,
-                json_extract(et.payload, '$.artifact_dir') as artifact_dir,
+                json_extract(et.payload, '$.metadata.artifact_dir') as artifact_dir,
+                json_extract(et.payload, '$.metadata.last_poll_status') as last_poll_status,
+                json_extract(et.payload, '$.metadata.last_polled_at') as last_polled_at,
                 et.created_at,
                 et.updated_at,
                 et.started_at,
@@ -84,14 +95,16 @@ async def _get_local_batch_status() -> list[dict]:
                 "lifecycle_state": row[1],
                 "provider_job_id": row[2],
                 "artifact_dir": row[3],
-                "created_at": row[4],
-                "updated_at": row[5],
-                "started_at": row[6],
-                "completed_at": row[7],
-                "request_id": row[8],
-                "provider_id": row[9],
-                "strategy_id": row[10],
-                "strategy_name": row[11],
+                "last_poll_status": row[4],
+                "last_polled_at": row[5],
+                "created_at": row[6],
+                "updated_at": row[7],
+                "started_at": row[8],
+                "completed_at": row[9],
+                "request_id": row[10],
+                "provider_id": row[11],
+                "strategy_id": row[12],
+                "strategy_name": row[13],
             })
 
         return results
@@ -114,18 +127,22 @@ def local() -> None:
         table.add_column("Provider Job ID", style="yellow")
         table.add_column("Created", style="blue")
         table.add_column("Completed", style="blue")
+        table.add_column("Last Poll Status", style="cyan")
+        table.add_column("Last Polled At", style="blue")
 
         for task in tasks:
             provider_job_id = task["provider_job_id"] or "[dim]not submitted[/dim]"
-            completed = task["completed_at"] or "[dim]-[/dim]"
+            poll_status = task["last_poll_status"] or "[dim]-[/dim]"
 
             table.add_row(
                 task["task_id"][:36],
                 task["strategy_name"] or task["strategy_id"][:36],
                 task["lifecycle_state"],
                 provider_job_id,
-                task["created_at"][:19] if task["created_at"] else "-",
-                completed[:19] if isinstance(completed, str) and completed != "[dim]-[/dim]" else completed,
+                _format_timestamp(task["created_at"]),
+                _format_timestamp(task["completed_at"]),
+                poll_status,
+                _format_timestamp(task["last_polled_at"]),
             )
 
         console.print(table)
@@ -167,9 +184,16 @@ def remote(limit: int = typer.Option(100, help="Maximum number of batches to ret
                 completed_at = batch.get("completed_at", 0)
 
                 # Convert timestamps to readable format
-                from datetime import datetime
-                created_str = datetime.fromtimestamp(created, tz=UTC).strftime("%Y-%m-%d %H:%M:%S") if created else "-"
-                completed_str = datetime.fromtimestamp(completed_at, tz=UTC).strftime("%Y-%m-%d %H:%M:%S") if completed_at else "-"
+                created_str = "-"
+                if created:
+                    created_str = datetime.fromtimestamp(created, tz=UTC).strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+                completed_str = "-"
+                if completed_at:
+                    completed_str = datetime.fromtimestamp(
+                        completed_at, tz=UTC
+                    ).strftime("%Y-%m-%d %H:%M:%S")
 
                 table.add_row(
                     batch.get("id", "")[:40],
@@ -191,12 +215,14 @@ def remote(limit: int = typer.Option(100, help="Maximum number of batches to ret
             for status, count in status_counts.most_common():
                 console.print(f"  {status}: {count}")
 
-        except httpx.HTTPStatusError as e:
-            console.print(f"[red]HTTP Error: {e.response.status_code} - {e.response.text}[/red]")
-            raise typer.Exit(code=1)
-        except Exception as e:
-            console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(code=1)
+        except httpx.HTTPStatusError as exc:
+            console.print(
+                f"[red]HTTP Error: {exc.response.status_code} - {exc.response.text}[/red]"
+            )
+            raise typer.Exit(code=1) from exc
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
+            raise typer.Exit(code=1) from exc
 
     asyncio.run(_run())
 
@@ -244,22 +270,30 @@ def compare() -> None:
             console.print("[yellow]No tasks have been submitted to OpenAI yet[/yellow]")
 
         if pending_tasks:
-            console.print(f"\n[yellow]Tasks pending submission: {len(pending_tasks)}[/yellow]")
+            pending_count = len(pending_tasks)
+            console.print(f"\n[yellow]Tasks pending submission: {pending_count}[/yellow]")
             for task in pending_tasks[:10]:  # Show first 10
-                console.print(f"  • {task['task_id'][:36]} - {task['strategy_name']} ({task['lifecycle_state']})")
-            if len(pending_tasks) > 10:
-                console.print(f"  ... and {len(pending_tasks) - 10} more")
+                strategy_label = task["strategy_name"] or task["strategy_id"][:36]
+                console.print(
+                    f"  • {task['task_id'][:36]} - {strategy_label} ({task['lifecycle_state']})"
+                )
+            if pending_count > 10:
+                console.print(f"  ... and {pending_count - 10} more")
 
         # Remote batches not in local DB
         local_job_ids = {t["provider_job_id"] for t in submitted_tasks}
         orphaned_batches = [b for b in remote_batches if b["id"] not in local_job_ids]
 
         if orphaned_batches:
-            console.print(f"\n[magenta]Remote batches not tracked locally: {len(orphaned_batches)}[/magenta]")
+            orphan_count = len(orphaned_batches)
+            console.print(
+                f"\n[magenta]Remote batches not tracked locally: {orphan_count}[/magenta]"
+            )
             for batch in orphaned_batches[:10]:  # Show first 10
-                console.print(f"  • {batch['id'][:40]} - {batch.get('status', 'unknown')}")
-            if len(orphaned_batches) > 10:
-                console.print(f"  ... and {len(orphaned_batches) - 10} more")
+                status_label = batch.get("status", "unknown")
+                console.print(f"  • {batch['id'][:40]} - {status_label}")
+            if orphan_count > 10:
+                console.print(f"  ... and {orphan_count - 10} more")
 
     asyncio.run(_run())
 
@@ -281,19 +315,25 @@ def details(
         headers = {"Authorization": f"Bearer {api_key}"}
 
         try:
-            async with httpx.AsyncClient(base_url=endpoint, timeout=30.0, headers=headers) as client:
+            async with httpx.AsyncClient(
+                base_url=endpoint,
+                timeout=30.0,
+                headers=headers,
+            ) as client:
                 response = await client.get(f"/v1/batches/{batch_id}")
                 response.raise_for_status()
                 batch = response.json()
 
             console.print(json.dumps(batch, indent=2))
 
-        except httpx.HTTPStatusError as e:
-            console.print(f"[red]HTTP Error: {e.response.status_code} - {e.response.text}[/red]")
-            raise typer.Exit(code=1)
-        except Exception as e:
-            console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(code=1)
+        except httpx.HTTPStatusError as exc:
+            console.print(
+                f"[red]HTTP Error: {exc.response.status_code} - {exc.response.text}[/red]"
+            )
+            raise typer.Exit(code=1) from exc
+        except Exception as exc:
+            console.print(f"[red]Error: {exc}[/red]")
+            raise typer.Exit(code=1) from exc
 
     asyncio.run(_run())
 
