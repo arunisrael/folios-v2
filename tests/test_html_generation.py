@@ -91,7 +91,7 @@ def test_portfolio_engine_build_trade_history() -> None:
         },
     ]
 
-    events, inventory = engine.build_trade_history(Decimal("10000"), orders)
+    events, _inventory = engine.build_trade_history(Decimal("10000"), orders)
 
     assert len(events) == 2
 
@@ -151,10 +151,18 @@ def test_render_leaderboard() -> None:
 
     portfolio_accounts = {
         "strat-1": [
-            {"provider_id": "openai", "cash_balance": 60000, "equity_value": 50000}  # Total: 110000 (+10%)
+            {
+                "provider_id": "openai",
+                "cash_balance": 60000,
+                "equity_value": 50000,
+            }
         ],
         "strat-2": [
-            {"provider_id": "gemini", "cash_balance": 55000, "equity_value": 40000}  # Total: 95000 (-5%)
+            {
+                "provider_id": "gemini",
+                "cash_balance": 55000,
+                "equity_value": 40000,
+            }
         ],
     }
 

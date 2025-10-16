@@ -113,7 +113,13 @@ async def main() -> None:
 
     # Render leaderboard
     print("Rendering leaderboard...")
-    index_html = render_leaderboard(strategies, portfolio_accounts_by_strategy, all_pairs)
+    index_html = render_leaderboard(
+        strategies,
+        portfolio_accounts_by_strategy,
+        all_pairs,
+        positions_by_strategy,
+        prices
+    )
     (out_dir / "index.html").write_text(index_html, encoding="utf-8")
     print(f"  ✓ {out_dir / 'index.html'}")
 

@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import shutil
 from pathlib import Path
-from typing import Any
 from uuid import uuid4
 
 import pytest
@@ -15,7 +14,6 @@ from folios_v2.domain.enums import ExecutionMode, LifecycleState, ProviderId, Re
 from folios_v2.providers import ExecutionTaskContext
 from folios_v2.providers.exceptions import ParseError
 from folios_v2.providers.unified_parser import UnifiedResultParser
-
 
 # Fixtures directory
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "provider_responses"

@@ -6,13 +6,13 @@ import asyncio
 import json
 from decimal import Decimal
 from pathlib import Path
+from typing import Never
 from unittest.mock import patch
 
 import pandas as pd
 import pytest
 
 from folios_v2.market_data import get_current_price, get_current_prices
-
 
 # Fixtures directory
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "yahoo_finance"
@@ -28,7 +28,7 @@ def load_fixture(filename: str) -> dict:
 class MockFastInfo:
     """Mock yfinance fast_info object."""
 
-    def __init__(self, last_price: float | None):
+    def __init__(self, last_price: float | None) -> None:
         self.last_price = last_price
 
 
@@ -43,7 +43,7 @@ class MockTicker:
         raise_fast_info_error: bool = False,
         raise_info_error: bool = False,
         raise_history_error: bool = False,
-    ):
+    ) -> None:
         self._fast_info_price = fast_info_price
         self._info_data = info_data or {}
         self._history_df = history_df if history_df is not None else pd.DataFrame()
@@ -200,7 +200,7 @@ class TestGetCurrentPrice:
     def test_api_connection_error_raises_value_error(self) -> None:
         """Test that API connection errors are properly handled."""
 
-        def raise_connection_error(symbol: str):
+        def raise_connection_error(symbol: str) -> Never:
             raise ConnectionError("Unable to connect to Yahoo Finance API")
 
         with patch(
@@ -301,7 +301,9 @@ class TestGetCurrentPrices:
                 str(fixture["fast_info"]["last_price"])
             )
 
-    def test_batch_handles_exceptions_gracefully(self, capsys) -> None:
+    def test_batch_handles_exceptions_gracefully(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
         """Test that batch processing continues even when some requests fail."""
 
         def mock_ticker_factory(symbol: str) -> MockTicker:
@@ -386,7 +388,7 @@ class TestEdgeCases:
         """Test multiple concurrent requests for the same symbol."""
         mock_ticker = MockTicker(fast_info_price=175.43)
 
-        async def run_concurrent():
+        async def run_concurrent() -> list[Decimal]:
             tasks = [get_current_price("AAPL") for _ in range(5)]
             return await asyncio.gather(*tasks)
 

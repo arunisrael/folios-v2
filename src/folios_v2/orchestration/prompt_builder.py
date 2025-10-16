@@ -6,12 +6,14 @@ from folios_v2.domain import ExecutionMode, RiskControls, Strategy
 
 RECENCY_BLOCK = (
     "\n\nRecency requirements (must follow):\n"
-    "- Prioritize data, filings, news, and price action from 2025 Q2 onward, with extra weight "
-    "on the latest quarter (Q3 2025).\n"
+    "- CRITICAL: Determine the current date first, then prioritize data, filings, news, and price "
+    "action from the past 3 months. Focus especially on the most recent 30 days.\n"
     "- If your toolset supports web search or retrieval, run a fresh search before forming "
-    "conclusions and cite the 2025 sources consulted.\n"
-    "- Treat pandemic-era demand shifts as historical context only; never cite them as current "
-    "catalysts unless corroborated by 2025 data.\n"
+    "conclusions and cite the recent sources consulted with their dates.\n"
+    "- Clearly state the date range you analyzed (e.g., 'Analysis based on data from [start date] "
+    "to [end date]').\n"
+    "- Historical trends older than 6 months should be treated as context only; never cite them as "
+    "current catalysts unless corroborated by recent data from the past 3 months.\n"
 )
 
 COMPLIANCE_BLOCK = (

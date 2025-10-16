@@ -75,12 +75,25 @@ class HTMLDataLoader:
                 elif payload is None:
                     payload = {}
 
+                updated_at = payload.get("updated_at")
+                if updated_at:
+                    if isinstance(updated_at, str):
+                        try:
+                            updated_at_dt = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+                        except ValueError:
+                            updated_at_dt = None
+                    else:
+                        updated_at_dt = updated_at
+                else:
+                    updated_at_dt = None
+
                 accounts.append({
                     "id": row.id,
                     "strategy_id": row.strategy_id,
                     "provider_id": row.provider_id,
                     "cash_balance": payload.get("cash_balance", 0),
                     "equity_value": payload.get("equity_value", 0),
+                    "updated_at": updated_at_dt,
                     "payload": payload,
                 })
             return accounts
@@ -349,15 +362,18 @@ class HTMLDataLoader:
         }
 
     def load_all_strategy_provider_pairs(self) -> list[tuple[str, str]]:
-        """Load all unique strategy+provider combinations that have requests.
+        """Load all unique strategy+provider combinations that have requests or portfolio accounts.
 
         Returns:
             List of (strategy_id, provider_id) tuples
         """
         query = text("""
             SELECT DISTINCT strategy_id, provider_id
-            FROM requests
-            WHERE provider_id IS NOT NULL
+            FROM (
+                SELECT strategy_id, provider_id FROM requests WHERE provider_id IS NOT NULL
+                UNION
+                SELECT strategy_id, provider_id FROM portfolio_accounts WHERE provider_id IS NOT NULL
+            )
             ORDER BY strategy_id, provider_id
         """)
 

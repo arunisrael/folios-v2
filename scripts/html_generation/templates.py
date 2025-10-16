@@ -26,6 +26,25 @@ PROVIDER_NAMES = {
 }
 
 
+def format_timestamp(value: datetime | str | None) -> str:
+    """Format timestamps for display."""
+    if not value:
+        return "-"
+
+    if isinstance(value, str):
+        try:
+            value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return value
+
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    else:
+        value = value.astimezone(timezone.utc)
+
+    return value.strftime("%Y-%m-%d %H:%M UTC")
+
+
 def base_css() -> str:
     """Return base CSS styles."""
     return """
@@ -158,7 +177,9 @@ def render_html_page(title: str, body_html: str) -> str:
 def render_leaderboard(
     strategies: list[dict[str, Any]],
     portfolio_accounts: dict[str, list[dict[str, Any]]],
-    all_strategy_provider_pairs: list[tuple[str, str]]
+    all_strategy_provider_pairs: list[tuple[str, str]],
+    positions_by_strategy: dict[str, dict[str | None, list[dict[str, Any]]]] | None = None,
+    prices: dict[str, Decimal] | None = None
 ) -> str:
     """Render leaderboard HTML (index.html).
 
@@ -166,6 +187,8 @@ def render_leaderboard(
         strategies: List of strategy dicts
         portfolio_accounts: Dict mapping strategy_id to list of portfolio accounts
         all_strategy_provider_pairs: List of all (strategy_id, provider_id) tuples with requests
+        positions_by_strategy: Dict mapping strategy_id to provider_id to positions (for accurate valuation)
+        prices: Dict mapping symbol to current price (for accurate valuation)
 
     Returns:
         Complete HTML page
@@ -196,7 +219,25 @@ def render_leaderboard(
         acc = account_lookup.get((sid, provider_id))
         if acc:
             cash = Decimal(str(acc.get("cash_balance", 0)))
-            equity = Decimal(str(acc.get("equity_value", 0)))
+
+            # Calculate equity value using current market prices if available
+            equity = Decimal("0")
+            if positions_by_strategy and prices and sid in positions_by_strategy:
+                positions = positions_by_strategy[sid].get(provider_id, [])
+                for pos in positions:
+                    symbol = pos["symbol"]
+                    side = pos.get("side", "long")
+                    qty = Decimal(str(pos.get("quantity", 0)))
+                    price = prices.get(symbol, Decimal("0"))
+                    # For short positions, equity is negative (it's a liability)
+                    if side == "short":
+                        equity -= qty * price
+                    else:
+                        equity += qty * price
+            else:
+                # Fall back to stored equity value if prices not available
+                equity = Decimal(str(acc.get("equity_value", 0)))
+
             total_value = cash + equity
         else:
             # Strategy was requested but no trades executed yet
@@ -292,15 +333,14 @@ def render_strategy_detail(
     # Get strategy prompt if available
     strategy_prompt = payload.get("prompt", "")
 
-    # Build provider sections
+    # Build provider sections and calculate accurate portfolio values
     provider_sections = []
+    provider_summary_rows: list[str] = []
     for acc in portfolio_accounts:
         provider_id = acc["provider_id"]
         provider_name = PROVIDER_NAMES.get(provider_id, provider_id)
 
         cash = Decimal(str(acc.get("cash_balance", 0)))
-        equity = Decimal(str(acc.get("equity_value", 0)))
-        total_value = cash + equity
 
         positions = positions_by_provider.get(provider_id, [])
         trades = trade_history_by_provider.get(provider_id, [])
@@ -313,7 +353,11 @@ def render_strategy_detail(
             side = pos.get("side", "long")  # Get position side
             qty = Decimal(str(pos.get("quantity", 0)))
             price = prices.get(symbol, Decimal("0"))
-            market_value = qty * price
+            # For short positions, market value is negative (it's a liability)
+            if side == "short":
+                market_value = -(qty * price)
+            else:
+                market_value = qty * price
             total_position_value += market_value
             avg_entry = pos.get("avg_entry_price")
 
@@ -357,6 +401,17 @@ def render_strategy_detail(
                 <td class="right {pl_class}">{pl_str}</td>
             </tr>
             """)
+
+        # Calculate total value using current prices
+        total_value = cash + total_position_value
+        if initial_capital > 0:
+            provider_return_pct = ((total_value - initial_capital) / initial_capital) * 100
+        else:
+            provider_return_pct = Decimal("0")
+
+        updated_display_raw = format_timestamp(acc.get("updated_at"))
+        updated_display = html_escape(updated_display_raw) if updated_display_raw != "-" else "-"
+        heading_suffix = f" (updated {updated_display})" if updated_display_raw != "-" else ""
 
         # Add CASH row
         cash_row = f"""
@@ -413,6 +468,13 @@ def render_strategy_detail(
         </table>
         """
 
+        provider_summary_rows.append(
+            f'<tr><td><span class="pill">{html_escape(provider_id)}</span></td>'
+            f'<td class="right">${total_value:,.2f}</td>'
+            f'<td class="right">{provider_return_pct:.2f}%</td>'
+            f'<td class="small">{updated_display}</td></tr>'
+        )
+
         # Trade history with essential columns only
         trade_rows = []
         for trade in trades[:20]:
@@ -444,7 +506,7 @@ def render_strategy_detail(
             """)
 
         trades_table = f"""
-        <h4>Trade History — {provider_name}</h4>
+        <h4>Trade History — {html_escape(provider_name)}</h4>
         <table>
             <thead>
                 <tr>
@@ -463,7 +525,7 @@ def render_strategy_detail(
         """
 
         provider_sections.append(f"""
-        <h3>Positions — {provider_name}</h3>
+        <h3>Positions — {html_escape(provider_name)}{heading_suffix}</h3>
         {positions_table}
 
         {summary_table}
@@ -501,13 +563,7 @@ def render_strategy_detail(
         </tr>
       </thead>
       <tbody>
-        {"".join([
-            f'<tr><td><span class="pill">{acc["provider_id"]}</span></td>'
-            f'<td class="right">${(Decimal(str(acc.get("cash_balance", 0))) + Decimal(str(acc.get("equity_value", 0)))):,.2f}</td>'
-            f'<td class="right">{(((Decimal(str(acc.get("cash_balance", 0))) + Decimal(str(acc.get("equity_value", 0)))) - initial_capital) / initial_capital * 100 if initial_capital > 0 else Decimal("0")):.2f}%</td>'
-            f'<td class="small">-</td></tr>'
-            for acc in portfolio_accounts
-        ])}
+        {"".join(provider_summary_rows) if provider_summary_rows else '<tr><td colspan="4" class="muted">No provider portfolios yet</td></tr>'}
       </tbody>
     </table>
 

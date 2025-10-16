@@ -133,8 +133,8 @@ class UnifiedResultParser(ResultParser):
         # Batch format varies by provider, so we try common patterns
         recommendations: list[dict[str, Any]] = []
 
-        def _extend_from_payload(payload: Any) -> None:
-            if not isinstance(payload, dict):
+        def _extend_from_payload(payload: Mapping[str, Any] | None) -> None:
+            if not payload:
                 return
             recs = payload.get("recommendations")
             if isinstance(recs, list):
