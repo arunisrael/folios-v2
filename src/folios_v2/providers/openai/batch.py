@@ -159,6 +159,14 @@ class OpenAIBatchExecutor(BatchExecutor):
         if not job_id:
             raise ExecutionError("OpenAI batch submission did not return an id")
 
+        # Validate batch ID format - OpenAI batch IDs should start with 'batch_'
+        if not str(job_id).startswith("batch_"):
+            raise ExecutionError(
+                f"Invalid OpenAI batch ID format: '{job_id}'. "
+                "Expected ID to start with 'batch_'. "
+                "Full response: {data}"
+            )
+
         metadata = {
             "input_file_id": file_id,
             "status": data.get("status"),

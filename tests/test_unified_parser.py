@@ -284,8 +284,8 @@ class TestBatchParsing:
 
         # Verify recommendations were extracted
         assert "recommendations" in result
-        # Note: The batch format has recommendations embedded in response text
-        # The parser tries to extract them but may not find them if format is different
+        tickers = {rec["ticker"] for rec in result["recommendations"]}
+        assert tickers == {"GOOGL", "JPM"}
 
     @pytest.mark.asyncio
     async def test_parse_gemini_batch_results(
@@ -307,6 +307,96 @@ class TestBatchParsing:
         assert result["provider"] == "gemini"
         assert result["total"] == 1
         assert len(result["records"]) == 1
+        assert len(result["recommendations"]) == 1
+        assert result["recommendations"][0]["ticker"] == "TSM"
+
+    @pytest.mark.asyncio
+    async def test_parse_openai_batch_with_properties_wrapper(
+        self, execution_context: ExecutionTaskContext
+    ) -> None:
+        """Ensure recommendations inside properties object are extracted."""
+        target_path = execution_context.artifact_dir / "openai_batch_results.jsonl"
+        structured_payload = {
+            "type": "object",
+            "properties": {
+                "recommendations": [
+                    {
+                        "ticker": "TSLA",
+                        "action": "SELL_SHORT",
+                        "confidence": 70,
+                    },
+                    {
+                        "ticker": "MSFT",
+                        "action": "BUY",
+                        "confidence": 90,
+                    },
+                ]
+            },
+        }
+        record = {
+            "response": {
+                "body": {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(structured_payload)
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+        target_path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+
+        parser = UnifiedResultParser("openai")
+        result = await parser.parse(execution_context)
+
+        assert len(result["recommendations"]) == 2
+        tickers = {rec["ticker"] for rec in result["recommendations"]}
+        assert tickers == {"TSLA", "MSFT"}
+
+    @pytest.mark.asyncio
+    async def test_parse_gemini_batch_with_split_parts(
+        self, execution_context: ExecutionTaskContext
+    ) -> None:
+        """Ensure concatenated Gemini parts strings are parsed."""
+        target_path = execution_context.artifact_dir / "gemini_batch_results.jsonl"
+        full_text = json.dumps(
+            {
+                "recommendations": [
+                    {
+                        "ticker": "SHOP",
+                        "action": "BUY",
+                        "confidence": 78,
+                    }
+                ]
+            }
+        )
+        midpoint = len(full_text) // 2
+        parts = [
+            {"text": full_text[:midpoint]},
+            {"text": full_text[midpoint:]},
+        ]
+        record = {
+            "response": {
+                "body": {
+                    "candidates": [
+                        {
+                            "content": {
+                                "parts": parts,
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+        target_path.write_text(json.dumps(record) + "\n", encoding="utf-8")
+
+        parser = UnifiedResultParser("gemini")
+        result = await parser.parse(execution_context)
+
+        assert len(result["recommendations"]) == 1
+        assert result["recommendations"][0]["ticker"] == "SHOP"
 
     @pytest.mark.asyncio
     async def test_parse_batch_jsonl_with_direct_recommendations(

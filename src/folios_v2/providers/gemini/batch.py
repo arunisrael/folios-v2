@@ -190,8 +190,16 @@ class GeminiBatchExecutor(BatchExecutor):
             if not job_name:
                 raise ExecutionError("Gemini batch submission did not return a job name")
 
-            self._meta[job_name] = {"custom_ids": custom_ids}
-            return SubmitResult(provider_job_id=str(job_name), metadata={"custom_ids": custom_ids})
+            # Validate batch ID format - Gemini job names should follow their naming pattern
+            job_name_str = str(job_name)
+            if not job_name_str or len(job_name_str) < 10:
+                raise ExecutionError(
+                    f"Invalid Gemini batch job name format: '{job_name}'. "
+                    f"Expected a valid Gemini job name but got unusually short or empty value."
+                )
+
+            self._meta[job_name_str] = {"custom_ids": custom_ids}
+            return SubmitResult(provider_job_id=job_name_str, metadata={"custom_ids": custom_ids})
 
         return await asyncio.to_thread(_submit)
 

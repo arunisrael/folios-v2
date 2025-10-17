@@ -125,12 +125,6 @@ workflow-quick:
 	@make harvest
 	@make execute
 
-# Test CLI executors with 5 random strategies
-test-cli:
-	@echo "Testing CLI executors with 5 strategies across all providers"
-	@echo "============================================================="
-	$(UV) run python scripts/run_cli_test.py
-
 # Gemini batch operations (24+ hour processing time)
 gemini-submit:
 	@echo "Submitting Gemini batch request..."
@@ -143,9 +137,9 @@ gemini-status:
 	$(UV) run python scripts/check_gemini_batch.py status
 
 gemini-harvest:
-	@echo "Harvesting completed Gemini batches..."
-	@echo "======================================="
-	$(UV) run python scripts/harvest_gemini_batches.py
+	@echo "Harvesting completed Gemini batches (uses unified harvest)..."
+	@echo "============================================================="
+	@make harvest-batch-results
 
 # Batch status checking (OpenAI and Gemini)
 check-batch-status:

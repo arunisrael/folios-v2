@@ -133,12 +133,64 @@ class UnifiedResultParser(ResultParser):
         # Batch format varies by provider, so we try common patterns
         recommendations: list[dict[str, Any]] = []
 
-        def _extend_from_payload(payload: Mapping[str, Any] | None) -> None:
-            if not payload:
+        def _extend_from_payload(payload: Any) -> None:
+            """Normalize provider payloads into recommendations lists."""
+
+            if payload is None:
                 return
+
+            if isinstance(payload, str):
+                try:
+                    decoded = json.loads(payload)
+                except json.JSONDecodeError:
+                    return
+                else:
+                    _extend_from_payload(decoded)
+                    return
+
+            if isinstance(payload, list):
+                for item in payload:
+                    _extend_from_payload(item)
+                return
+
+            if not isinstance(payload, Mapping):
+                return
+
             recs = payload.get("recommendations")
             if isinstance(recs, list):
-                recommendations.extend(recs)
+                recommendations.extend(r for r in recs if isinstance(r, Mapping))
+
+            # Some OpenAI responses wrap fields under a "properties" object.
+            properties = payload.get("properties")
+            if isinstance(properties, Mapping):
+                recs_from_properties = properties.get("recommendations")
+                if isinstance(recs_from_properties, list):
+                    recommendations.extend(
+                        r for r in recs_from_properties if isinstance(r, Mapping)
+                    )
+
+            # Allow providers to nest additional structured payloads.
+            for key in ("data", "result", "output"):
+                nested = payload.get(key)
+                if nested:
+                    _extend_from_payload(nested)
+
+            # Gemini batch responses often expose a "content" dictionary with
+            # parts that already contain recommendation objects.
+            content = payload.get("content")
+            if isinstance(content, Mapping):
+                _extend_from_payload(content)
+
+            parts = payload.get("parts")
+            if isinstance(parts, list):
+                text_chunks: list[str] = []
+                for part in parts:
+                    if isinstance(part, Mapping):
+                        text = part.get("text")
+                        if isinstance(text, str):
+                            text_chunks.append(text)
+                if text_chunks:
+                    _extend_from_payload("".join(text_chunks))
 
         for record in records:
             if not isinstance(record, dict):
@@ -180,6 +232,21 @@ class UnifiedResultParser(ResultParser):
                             except json.JSONDecodeError:
                                 continue
                             _extend_from_payload(parsed_content)
+                        elif isinstance(content, list):
+                            for block in content:
+                                if isinstance(block, Mapping):
+                                    text = block.get("text")
+                                    if isinstance(text, str):
+                                        _extend_from_payload(text)
+
+                candidates = body.get("candidates")
+                if isinstance(candidates, list):
+                    for candidate in candidates:
+                        if not isinstance(candidate, Mapping):
+                            continue
+                        cand_content = candidate.get("content")
+                        if isinstance(cand_content, Mapping):
+                            _extend_from_payload(cand_content)
 
         return {
             "provider": self.provider_id,
