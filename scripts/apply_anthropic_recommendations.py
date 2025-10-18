@@ -36,6 +36,23 @@ STRATEGY_MAPPING = {
     "Charlie Munger Quality Compounder Strategy": "62da9866-b395-4d00-8bc5-209cc130901e",
     "Charlie Munger Strategy": "62da9866-b395-4d00-8bc5-209cc130901e",
     "Contrarian Value Investing": "a3a3cfea-d9de-4e9a-bb85-b5517a026c0d",
+    # Friday strategies (weekday 5)
+    "Ray Dalio Pure Alpha Strategy": "ce7ba1fb-6235-41cb-9063-3622427d21ac",
+    "Ray Dalio Strategy": "18e0f836-2541-49a9-b7b0-243a9cc7ff0d",
+    "Scuttlebutt Qualitative Research": "740c31df-eb4e-4cba-ac4a-f6560c49ee35",
+    "Seth Klarman Strategy": "273a2890-a72f-4c78-8941-0a832b7f0875",
+    "Short Selling Overvalued Stocks": "037d907b-393c-46ed-a332-0a11b3744494",
+    "Short-Selling Contrarian": "ae281888-8e7c-467d-ba5d-43524dc83824",
+    "Stanley Druckenmiller Strategy": "70fd7d10-3fc0-441e-94ac-5757416f659d",
+    "Steven Cohen Strategy": "5d8109fa-c277-4d5d-8670-523391e824ba",
+    "Terry Smith Strategy": "cccaec95-9e47-4dc7-a251-d70bfe9ce022",
+    "Thomas Rowe Price Jr Strategy": "1b34a9b6-4cb9-4e6b-9a31-fd666f63dd6c",
+    "Value": "f0ddf4e2-c9a8-4afe-a302-c21f7bc16a70",
+    "Value Investing": "0e3f8964-5f16-475a-8e74-e474c4634be7",
+    "Walter Schloss Strategy": "c9ff2972-cad7-4359-9e02-9bff4e4f4664",
+    "Warren Buffett Quality Growth Strategy": "9a089867-8137-45ed-8a7f-f735f83e0190",
+    "Warren Buffett Strategy": "b99a340b-f51e-46ab-9335-ce3a0a3441f3",
+    "William O'Neil Strategy": "3d41ab75-db89-40b8-9d55-1ebd094c440d",
 }
 
 
@@ -235,6 +252,53 @@ async def _execute_buy_order(
     return order, position
 
 
+async def _execute_short_order(
+    strategy_id: StrategyId,
+    provider_id: ProviderId,
+    symbol: str,
+    allocation_percent: float,
+    portfolio_value: Decimal,
+    current_price: Decimal,
+    rationale: str = "",
+) -> tuple[Order, Position]:
+    """Execute a SELL_SHORT order and create short position."""
+    # Calculate position size
+    allocation_amount = portfolio_value * Decimal(str(allocation_percent / 100))
+    quantity = (allocation_amount / current_price).quantize(Decimal("0.01"))
+
+    # Build metadata with rationale
+    metadata = {"rationale": rationale} if rationale else {}
+
+    # Create order
+    order = Order(
+        id=OrderId(uuid4()),
+        strategy_id=strategy_id,
+        provider_id=provider_id,
+        symbol=symbol,
+        action=OrderAction.SELL_SHORT,
+        quantity=quantity,
+        limit_price=current_price,
+        status=OrderStatus.FILLED,
+        placed_at=utc_now(),
+        filled_at=utc_now(),
+        metadata=metadata,
+    )
+
+    # Create short position
+    position = Position(
+        id=PositionId(uuid4()),
+        strategy_id=strategy_id,
+        provider_id=provider_id,
+        symbol=symbol,
+        side=PositionSide.SHORT,
+        quantity=quantity,
+        average_price=current_price,
+        opened_at=utc_now(),
+    )
+
+    return order, position
+
+
 async def _apply_strategy_recommendations(
     strategy_name: str,
     strategy_id: str,
@@ -309,25 +373,72 @@ async def _apply_strategy_recommendations(
                 cost = order.quantity * order.limit_price
                 print(f"    ✓ BUY: {order.quantity} shares @ ${order.limit_price} = ${cost:,.2f}")
 
+            elif action == "SHORT":
+                # Get live price
+                if use_live_prices:
+                    try:
+                        current_price = await get_current_price(symbol)
+                        print(f"    Live price: ${current_price}")
+                    except Exception as e:
+                        print(f"    ERROR: Failed to fetch live price for {symbol}: {e}")
+                        print(f"    Skipping {symbol}")
+                        continue
+                else:
+                    # Use placeholder price for dry-run
+                    current_price = Decimal("100.0")
+                    print(f"    Using placeholder price: ${current_price}")
+
+                order, position = await _execute_short_order(
+                    strategy_uuid,
+                    provider_id,
+                    symbol,
+                    allocation_percent,
+                    portfolio_value,
+                    current_price,
+                    rationale,
+                )
+
+                await uow.order_repository.add(order)
+                await uow.position_repository.add(position)
+
+                orders_created.append(order)
+                positions_created.append(position)
+
+                proceeds = order.quantity * order.limit_price
+                print(f"    ✓ SHORT: {order.quantity} shares @ ${order.limit_price} = ${proceeds:,.2f}")
+
             elif action == "HOLD":
                 print("    ⏸️  HOLD - no action taken")
 
         # Update portfolio account
-        total_cost = sum(
+        # For longs: we spend cash to buy (negative), equity increases (positive)
+        total_long_cost = sum(
             order.quantity * order.limit_price
             for order in orders_created
             if order.action == OrderAction.BUY
         )
-        total_equity = sum(
+        total_long_equity = sum(
             position.quantity * position.average_price
             for position in positions_created
             if position.side == PositionSide.LONG
         )
 
+        # For shorts: we receive cash proceeds (positive), equity decreases (negative liability)
+        total_short_proceeds = sum(
+            order.quantity * order.limit_price
+            for order in orders_created
+            if order.action == OrderAction.SELL_SHORT
+        )
+        total_short_equity = sum(
+            position.quantity * position.average_price
+            for position in positions_created
+            if position.side == PositionSide.SHORT
+        )
+
         updated_account = account.model_copy(
             update={
-                "cash_balance": account.cash_balance - total_cost,
-                "equity_value": account.equity_value + total_equity,
+                "cash_balance": account.cash_balance - total_long_cost + total_short_proceeds,
+                "equity_value": account.equity_value + total_long_equity - total_short_equity,
                 "updated_at": utc_now(),
             }
         )
@@ -342,12 +453,15 @@ async def _apply_strategy_recommendations(
     print(f"    Equity: ${updated_account.equity_value:,.2f}")
     print(f"    Total: ${updated_account.cash_balance + updated_account.equity_value:,.2f}")
 
+    # Calculate net capital deployed (long cost - short proceeds)
+    net_capital_deployed = total_long_cost - total_short_proceeds
+
     return {
         "strategy_name": strategy_name,
         "strategy_id": strategy_id,
         "orders_created": len(orders_created),
         "positions_created": len(positions_created),
-        "total_cost": float(total_cost),
+        "net_capital_deployed": float(net_capital_deployed),
         "cash_balance": float(updated_account.cash_balance),
         "equity_value": float(updated_account.equity_value),
     }
@@ -407,7 +521,7 @@ async def _apply_all_recommendations(
     print(f"Strategies processed: {len(summaries)}")
     print(f"Total orders: {sum(s['orders_created'] for s in summaries)}")
     print(f"Total positions: {sum(s['positions_created'] for s in summaries)}")
-    print(f"Total invested: ${sum(s['total_cost'] for s in summaries):,.2f}")
+    print(f"Net capital deployed: ${sum(s['net_capital_deployed'] for s in summaries):,.2f}")
     print("\nPer-Strategy Breakdown:")
     for s in summaries:
         print(f"  • {s['strategy_name']}")

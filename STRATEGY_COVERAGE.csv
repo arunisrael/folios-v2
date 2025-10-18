@@ -1,0 +1,81 @@
+strategy_id,strategy_name,provider_count,providers_with_trades,missing_providers
+e125f9e3-e3d6-4052-bb41-018e42696e62,"Cliff Asness Strategy",0,NONE,"openai,gemini,anthropic"
+a3a3cfea-d9de-4e9a-bb85-b5517a026c0d,"Contrarian Investing",0,NONE,"openai,gemini,anthropic"
+d605360c-aa90-4db7-b588-4ec65dc660c6,"Daniel Loeb Strategy",0,NONE,"openai,gemini,anthropic"
+1dff269f-412a-4c74-bca1-e9d3ab213d6e,"David Dreman Strategy",0,NONE,"openai,gemini,anthropic"
+9da24a8d-7e1a-4a7a-b363-58c7a33b5619,"David Einhorn Strategy",0,NONE,"openai,gemini,anthropic"
+0a245bcc-9b76-4139-b2c5-9886c1bcb955,"David Shaw Strategy",0,NONE,"openai,gemini,anthropic"
+d6075425-4f7c-404a-9040-1b034c643b71,"David Tepper Strategy",0,NONE,"openai,gemini,anthropic"
+3cf40398-6bb5-48c4-9b24-44d0a63af703,"Event-Driven Activism",0,NONE,"openai,gemini,anthropic"
+a2f165c8-6f8d-4ffb-9ae8-540be893a7aa,"Factor-Based Investing",0,NONE,"openai,gemini,anthropic"
+0b1ef28a-515e-49df-8708-de6ec70cd56e,"George Soros Strategy",0,NONE,"openai,gemini,anthropic"
+8b9966ce-308a-4a5a-8fea-43e5e47e6310,"Geraldine Weiss Strategy",0,NONE,"openai,gemini,anthropic"
+63056a65-1cca-44b8-9781-c557722a4a51,"Global Macro Investing",0,NONE,"openai,gemini,anthropic"
+fd606c1a-b898-4353-9b55-2d688ca7fc4d,"Growth Investing",0,NONE,"openai,gemini,anthropic"
+e13bedfe-dd3f-4021-9dda-f23005439fb7,"Growth at Reasonable Price",0,NONE,"openai,gemini,anthropic"
+78f94a22-7e84-4d5e-a46b-4379c04e1965,"Low Volatility Defensive Equity Strategy",0,NONE,"openai,gemini,anthropic"
+bb3d4ffe-9511-4c85-9cd8-3d249e476449,"Martin Whitman Strategy",0,NONE,"openai,gemini,anthropic"
+e0813c83-0cd7-4061-8c4f-f0aaed3cb1f0,"Mason Hawkins Strategy",0,NONE,"openai,gemini,anthropic"
+345f9b6f-50f5-4d63-9d70-34a824e55eff,"Michael Price Strategy",0,NONE,"openai,gemini,anthropic"
+f901ba95-d3ae-431e-8470-1a66dc119707,"Momentum Trading",0,NONE,"openai,gemini,anthropic"
+b0cd8d69-bfeb-41d9-b4b5-f4e0c1205a08,"Nelson Peltz Strategy",0,NONE,"openai,gemini,anthropic"
+9119eab4-3c5d-4b5d-bd0f-6e08aa302671,"Nicolas Darvas Strategy",0,NONE,"openai,gemini,anthropic"
+7f177d0f-f16d-40b9-b582-8d81559c4bb0,"Pat Dorsey Strategy",0,NONE,"openai,gemini,anthropic"
+64e06a91-5413-4207-bc24-1108b69660a3,"Peter Lynch Small Cap Strategy",0,NONE,"openai,gemini,anthropic"
+abd80b1a-dacf-48b0-938b-de6cafff99ae,"Peter Lynch Strategy",0,NONE,"openai,gemini,anthropic"
+524713eb-214c-49c0-b473-253debc34c7c,"Quantitative Statistical Arbitrage",0,NONE,"openai,gemini,anthropic"
+6b291794-02b8-471f-b02c-24d78802164f,"Benjamin Graham Cigar Butt Strategy",1,gemini,"anthropic,openai"
+26b65f04-b765-4deb-a3ae-19cb99643b2d,"Disruptive Innovation Growth",1,anthropic,"gemini,openai"
+629303d2-0de8-47f3-8299-6c6445764990,"George Soros Currency Strategy",1,anthropic,"gemini,openai"
+06c108f5-a0cd-4ab2-a7b9-980f4a8d7660,"Michael Burry Strategy",1,anthropic,"gemini,openai"
+36d9d497-1342-4625-8d3f-e0baf44da530,"Mohnish Pabrai Strategy",1,anthropic,"gemini,openai"
+877be608-8547-4656-9d16-0f395df434dd,Momentum,1,anthropic,"gemini,openai"
+036bed93-8905-4e48-9348-6788fc15677b,"Multi-Strategy Market Neutral",1,anthropic,"gemini,openai"
+6ba1e43d-1ee7-4d5f-8ab1-7f9652013be4,"Philip Fisher Strategy",1,anthropic,"gemini,openai"
+ce7ba1fb-6235-41cb-9063-3622427d21ac,"Ray Dalio Pure Alpha Strategy",1,anthropic,"gemini,openai"
+18e0f836-2541-49a9-b7b0-243a9cc7ff0d,"Ray Dalio Strategy",1,anthropic,"gemini,openai"
+740c31df-eb4e-4cba-ac4a-f6560c49ee35,"Scuttlebutt Qualitative Research",1,anthropic,"gemini,openai"
+273a2890-a72f-4c78-8941-0a832b7f0875,"Seth Klarman Strategy",1,anthropic,"gemini,openai"
+037d907b-393c-46ed-a332-0a11b3744494,"Short Selling Overvalued Stocks",1,anthropic,"gemini,openai"
+ae281888-8e7c-467d-ba5d-43524dc83824,"Short-Selling Contrarian",1,anthropic,"gemini,openai"
+70fd7d10-3fc0-441e-94ac-5757416f659d,"Stanley Druckenmiller Strategy",1,anthropic,"gemini,openai"
+5d8109fa-c277-4d5d-8670-523391e824ba,"Steven Cohen Strategy",1,anthropic,"gemini,openai"
+cccaec95-9e47-4dc7-a251-d70bfe9ce022,"Terry Smith Strategy",1,anthropic,"gemini,openai"
+1b34a9b6-4cb9-4e6b-9a31-fd666f63dd6c,"Thomas Rowe Price Jr Strategy",1,anthropic,"gemini,openai"
+f0ddf4e2-c9a8-4afe-a302-c21f7bc16a70,Value,1,anthropic,"gemini,openai"
+0e3f8964-5f16-475a-8e74-e474c4634be7,"Value Investing",1,anthropic,"gemini,openai"
+c9ff2972-cad7-4359-9e02-9bff4e4f4664,"Walter Schloss Strategy",1,anthropic,"gemini,openai"
+9a089867-8137-45ed-8a7f-f735f83e0190,"Warren Buffett Quality Growth Strategy",1,anthropic,"gemini,openai"
+b99a340b-f51e-46ab-9335-ce3a0a3441f3,"Warren Buffett Strategy",1,anthropic,"gemini,openai"
+3d41ab75-db89-40b8-9d55-1ebd094c440d,"William O'Neil Strategy",1,anthropic,"gemini,openai"
+5bdc6204-72a8-44bf-bbe9-70b26596589b,"Activist Value Investing",2,"anthropic,gemini",openai
+c4b78c0c-cb0a-4f8f-b800-8646049b047c,"All Weather Risk Parity",2,"anthropic,gemini",openai
+4e31e308-adb2-4e9f-bd29-6be510d5b4f7,"Cathie Wood Strategy",2,"gemini,openai",anthropic
+42ccd1a7-e47e-4b47-aab2-9417ede4f0b3,"Charles Brandes Strategy",2,"gemini,openai",anthropic
+8b5ab2d0-d664-4e47-b437-ed25fed7cbf5,"Christopher Browne Strategy",2,"gemini,openai",anthropic
+68b86a90-3ac3-4253-985b-0dde7f493e11,"Cigar-Butt Deep Value",2,"gemini,openai",anthropic
+0f4bf47a-e63c-40d7-8138-e8a5395f5331,"Beaten-Down Leaders Strategy",3,"anthropic,gemini,openai",COMPLETE
+d75d1377-1721-4f1b-852c-f54bb495847a,"Benjamin Graham Strategy",3,"anthropic,gemini,openai",COMPLETE
+e04d2c5d-0811-4441-bd0c-2807446dad1d,"Bill Ackman Strategy",3,"anthropic,gemini,openai",COMPLETE
+926b57d7-cc11-4d0b-a8f8-3391d474163c,"Bill Ackman Turnaround Strategy",3,"anthropic,gemini,openai",COMPLETE
+0996fc65-e1e7-4a87-87e2-8eea5e5b6396,"Bill Miller Strategy",3,"anthropic,gemini,openai",COMPLETE
+bd096507-a4cb-4dc7-832b-1a9519f4ea40,"Bruce Berkowitz Strategy",3,"anthropic,gemini,openai",COMPLETE
+08491010-8cb3-4150-abc9-82e128dfbc85,"Carl Icahn Corporate Raider Strategy",3,"anthropic,gemini,openai",COMPLETE
+19ba440a-da27-4819-b691-d3d8cc76ff19,"Carl Icahn Strategy",3,"anthropic,gemini,openai",COMPLETE
+62da9866-b395-4d00-8bc5-209cc130901e,"Charlie Munger Strategy",3,"anthropic,gemini,openai",COMPLETE
+9bd5e8cc-33c1-4c82-ac2d-eac5c7991337,"Guy Spier Strategy",3,"claude,gemini,openai",COMPLETE
+4cb2546a-5aa2-4dfb-8d71-217842c6286a,"High-Dividend Investing",3,"claude,gemini,openai",COMPLETE
+194abbef-a5f3-4d07-ae73-8710de74bee1,Income,3,"claude,gemini,openai",COMPLETE
+d1f41932-435e-4ab8-b4bc-8235f6bceb11,"Insider Following Strategy",3,"claude,gemini,openai",COMPLETE
+80d44909-097d-41c3-88ae-cca446a632a1,"Jacob Little Strategy",3,"claude,gemini,openai",COMPLETE
+f369b2a4-8ff0-4c22-8c1f-012bc005f1f0,"Jean-Marie Eveillard Strategy",3,"claude,gemini,openai",COMPLETE
+d8130562-9dfa-44d1-8235-f1d0016815a3,"Jesse Livermore Strategy",3,"claude,gemini,openai",COMPLETE
+90a622ee-965a-4143-91af-05fcab4b7153,"Jim Chanos Strategy",3,"claude,gemini,openai",COMPLETE
+d6cd2e7e-044d-4d2a-8459-ca3e538d8a51,"Jim Simons Strategy",3,"claude,gemini,openai",COMPLETE
+24fecb8f-cb85-4194-8bfd-e5b087f08f45,"Joel Greenblatt Strategy",3,"claude,gemini,openai",COMPLETE
+f70b0516-c9d9-438c-afb7-694ca2f4f39e,"John Templeton Strategy",3,"claude,gemini,openai",COMPLETE
+fd045b42-fb8d-4fb2-b26a-5ee205dcee3b,"Julian Robertson Strategy",3,"claude,gemini,openai",COMPLETE
+ef811c4c-601e-4b62-8eca-5c8dfe9fd9f0,"Longevity & Healthspan Innovators",3,"claude,gemini,openai",COMPLETE
+53a0007f-b475-419e-a9ed-2c9e51ffbb30,"Howard Marks Strategy",4,"anthropic,claude,gemini,openai",COMPLETE
+4a981cc4-9ec4-4bb7-b53b-ea8c6f0b1976,"John Neff Strategy",4,"anthropic,claude,gemini,openai",COMPLETE
+43e12d9e-d09d-40fe-be2e-6019fb102343,"Ken Griffin Strategy",4,"anthropic,claude,gemini,openai",COMPLETE
