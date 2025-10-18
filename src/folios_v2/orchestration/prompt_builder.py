@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+from decimal import Decimal
+from typing import Iterable
+
 from folios_v2.domain import ExecutionMode, RiskControls, Strategy
+from folios_v2.orchestration.portfolio_snapshot import PortfolioSnapshot
 
 RECENCY_BLOCK = (
     "\n\nRecency requirements (must follow):\n"
@@ -108,12 +113,95 @@ def _candidates_block(candidates: tuple[str, ...] | None) -> str:
     return "\n\nScreened ticker candidates (latest refresh):\n" + formatted
 
 
+def _fmt_money(value: Decimal | None) -> str:
+    if value is None:
+        return "n/a"
+    return f"${value:,.2f}"
+
+
+def _fmt_decimal(value: Decimal | None, *, digits: int = 2, suffix: str = "") -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:,.{digits}f}{suffix}"
+
+
+def _fmt_datetime(value: datetime | None) -> str:
+    if value is None:
+        return "n/a"
+    return value.isoformat(timespec="seconds")
+
+
+def _format_positions(positions: Iterable) -> str:
+    positions = list(positions)
+    if not positions:
+        return "- No open positions."
+
+    header = "Ticker | Side | Qty | Avg Price | Market Price | Value | P/L | Weight"
+    lines = [header]
+    for pos in positions:
+        lines.append(
+            " | ".join(
+                [
+                    pos.symbol,
+                    pos.side,
+                    f"{pos.quantity:,.4f}",
+                    _fmt_money(pos.average_price),
+                    _fmt_money(pos.market_price),
+                    _fmt_money(pos.market_value),
+                    _fmt_money(pos.unrealized_pl),
+                    _fmt_decimal(pos.weight_pct, digits=1, suffix="%"),
+                ]
+            )
+        )
+    return "\n".join(lines)
+
+
+def _format_recent_orders(orders: Iterable) -> str:
+    orders = list(orders)
+    if not orders:
+        return ""
+
+    lines = ["Recent filled orders (most recent first):"]
+    for order in orders:
+        lines.append(
+            f"- {order.filled_at.isoformat(timespec='seconds') if order.filled_at else 'n/a'}: "
+            f"{order.action} {order.quantity:,.4f} {order.symbol} @ {_fmt_money(order.price)}"
+        )
+    return "\n".join(lines)
+
+
+def _portfolio_snapshot_block(snapshot: PortfolioSnapshot) -> str:
+    gross = _fmt_decimal(snapshot.gross_exposure_pct, digits=1, suffix="%")
+    net = _fmt_decimal(snapshot.net_exposure_pct, digits=1, suffix="%")
+    leverage_raw = _fmt_decimal(snapshot.leverage, digits=2)
+    leverage = f"{leverage_raw}x" if leverage_raw != "n/a" else "n/a"
+    exposures = f"Gross exposure: {gross}   Net exposure: {net}   Leverage: {leverage}"
+
+    block_lines = [
+        f"Current Portfolio Snapshot — {snapshot.provider_id.value.upper()}",
+        f"Updated at: {_fmt_datetime(snapshot.updated_at)}",
+        f"Cash: {_fmt_money(snapshot.cash)}",
+        f"Positions value: {_fmt_money(snapshot.positions_value)}",
+        f"Total portfolio value: {_fmt_money(snapshot.total_value)}",
+        exposures,
+        "",
+        _format_positions(snapshot.positions),
+    ]
+
+    recent_orders_block = _format_recent_orders(snapshot.recent_orders)
+    if recent_orders_block:
+        block_lines.extend(["", recent_orders_block])
+
+    return "\n".join(block_lines)
+
+
 def build_research_prompt(
     strategy: Strategy,
     *,
     mode: ExecutionMode,
     market_context: str | None = None,
     screener_candidates: tuple[str, ...] | None = None,
+    portfolio_snapshot: PortfolioSnapshot | None = None,
 ) -> str:
     """Compose the full research prompt for a strategy and execution mode."""
 
@@ -123,8 +211,15 @@ def build_research_prompt(
         if trimmed:
             base_prompt = f"{trimmed}\n\n{base_prompt}"
 
+    prompt_sections: list[str] = []
+
+    if portfolio_snapshot is not None:
+        prompt_sections.append(_portfolio_snapshot_block(portfolio_snapshot))
+
+    prompt_sections.append(base_prompt)
+
     prompt = (
-        base_prompt
+        "\n\n".join(prompt_sections)
         + RECENCY_BLOCK
         + COMPLIANCE_BLOCK
         + _risk_constraints_block(strategy.risk_controls)

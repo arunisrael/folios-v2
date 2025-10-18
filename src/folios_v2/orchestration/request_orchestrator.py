@@ -22,6 +22,8 @@ from folios_v2.domain import (
     TaskId,
 )
 from folios_v2.persistence import UnitOfWork
+from folios_v2.market_data import get_current_prices
+from folios_v2.orchestration.portfolio_snapshot import load_portfolio_snapshot
 from folios_v2.providers import ProviderRegistry
 from folios_v2.screeners import ScreenerError, ScreenerResult, ScreenerService
 from folios_v2.utils import ensure_utc
@@ -71,10 +73,29 @@ class RequestOrchestrator:
 
         strategy_for_prompt, screener_result = await self._prepare_strategy(strategy)
 
+        portfolio_snapshot = None
+        try:
+            async with self._uow_factory() as read_uow:
+                portfolio_snapshot = await load_portfolio_snapshot(
+                    read_uow,
+                    strategy_for_prompt.id,
+                    provider_id,
+                    price_fetcher=get_current_prices,
+                    recent_order_limit=3,
+                )
+        except Exception as exc:  # pragma: no cover - defensive logging
+            self._logger.warning(
+                "Failed to load portfolio snapshot for %s/%s: %s",
+                strategy_for_prompt.id,
+                provider_id.value,
+                exc,
+            )
+
         prompt = build_research_prompt(
             strategy_for_prompt,
             mode=mode,
             screener_candidates=screener_result.symbols if screener_result else None,
+            portfolio_snapshot=portfolio_snapshot,
         )
 
         base_metadata = {

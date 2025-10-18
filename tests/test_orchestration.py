@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Mapping
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 from uuid import uuid4
 
@@ -17,6 +18,8 @@ from folios_v2.domain import (
     StrategyScreener,
     StrategyStatus,
 )
+from folios_v2.orchestration.prompt_builder import build_research_prompt
+from folios_v2.orchestration.portfolio_snapshot import PortfolioSnapshot, PositionSummary
 from folios_v2.orchestration import RequestOrchestrator, StrategyCoordinator
 from folios_v2.persistence import InMemoryUnitOfWork, UnitOfWork
 from folios_v2.providers import ProviderPlugin, ProviderRegistry, ProviderThrottle, ResultParser
@@ -55,6 +58,52 @@ class StubScreenerProvider:
             filters=dict(filters),
             metadata={"limit": limit, "universe_cap": universe_cap},
         )
+
+
+def test_build_research_prompt_includes_snapshot_section() -> None:
+    strategy = Strategy(
+        id=StrategyId(uuid4()),
+        name="SnapshotTest",
+        prompt="Base strategy prompt.",
+        tickers=(),
+        status=StrategyStatus.ACTIVE,
+    )
+    snapshot = PortfolioSnapshot(
+        strategy_id=strategy.id,
+        provider_id=ProviderId.OPENAI,
+        cash=Decimal("20000"),
+        positions_value=Decimal("80000"),
+        total_value=Decimal("100000"),
+        gross_exposure_pct=Decimal("80"),
+        net_exposure_pct=Decimal("60"),
+        leverage=Decimal("0.80"),
+        updated_at=datetime(2025, 10, 18, 5, 3, tzinfo=UTC),
+        positions=[
+            PositionSummary(
+                symbol="AAPL",
+                side="long",
+                quantity=Decimal("10"),
+                average_price=Decimal("150"),
+                market_price=Decimal("170"),
+                market_value=Decimal("1700"),
+                unrealized_pl=Decimal("200"),
+                unrealized_pl_pct=Decimal("0.1333"),
+                weight_pct=Decimal("1.7"),
+            )
+        ],
+    )
+
+    prompt = build_research_prompt(
+        strategy,
+        mode=ExecutionMode.BATCH,
+        portfolio_snapshot=snapshot,
+    )
+
+    assert "Current Portfolio Snapshot — OPENAI" in prompt
+    assert "Cash: $20,000.00" in prompt
+    assert "Gross exposure: 80.0%" in prompt
+    assert "AAPL | long" in prompt
+    assert prompt.count("Base strategy prompt.") == 1
 
 
 def test_ensure_schedule_uses_research_day() -> None:
