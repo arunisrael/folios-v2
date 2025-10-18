@@ -338,7 +338,8 @@ def render_strategy_detail(
     provider_summary_rows: list[str] = []
     for acc in portfolio_accounts:
         provider_id = acc["provider_id"]
-        provider_name = PROVIDER_NAMES.get(provider_id, provider_id)
+        provider_label = provider_id if provider_id else "default"
+        provider_name = PROVIDER_NAMES.get(provider_id, provider_label)
 
         cash = Decimal(str(acc.get("cash_balance", 0)))
 
@@ -469,7 +470,7 @@ def render_strategy_detail(
         """
 
         provider_summary_rows.append(
-            f'<tr><td><span class="pill">{html_escape(provider_id)}</span></td>'
+            f'<tr><td><span class="pill">{html_escape(provider_label)}</span></td>'
             f'<td class="right">${total_value:,.2f}</td>'
             f'<td class="right">{provider_return_pct:.2f}%</td>'
             f'<td class="small">{updated_display}</td></tr>'

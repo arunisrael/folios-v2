@@ -69,6 +69,7 @@ async def main() -> None:
     portfolio_accounts_by_strategy: dict[str, list[dict]] = {}
     positions_by_strategy: dict[str, dict[str | None, list[dict]]] = {}
     trade_history_by_strategy: dict[str, dict[str | None, list[dict]]] = {}
+    cash_mismatch_warnings: list[tuple[str, str | None, Decimal, Decimal]] = []
 
     print("Processing strategies...")
     for strategy in strategies:
@@ -77,7 +78,9 @@ async def main() -> None:
 
         # Load portfolio accounts (provider-scoped)
         accounts = loader.load_portfolio_accounts(sid)
-        portfolio_accounts_by_strategy[sid] = accounts
+        account_map: dict[str | None, dict] = {
+            acc["provider_id"]: acc for acc in accounts
+        }
 
         # Get unique providers (from accounts + positions)
         providers: set[str | None] = {acc["provider_id"] for acc in accounts}
@@ -103,6 +106,41 @@ async def main() -> None:
             )
             trade_history_by_provider[provider_id] = events
 
+            derived_cash = portfolio_engine.compute_cash_balance(
+                initial_capital=initial_capital,
+                orders=orders,
+            )
+            positions_value = portfolio_engine.compute_positions_market_value(
+                positions=pos,
+                prices=prices,
+            )
+
+            account = account_map.get(provider_id)
+            if account is None:
+                account = {
+                    "id": None,
+                    "strategy_id": sid,
+                    "provider_id": provider_id,
+                    "cash_balance": derived_cash,
+                    "equity_value": positions_value,
+                    "updated_at": None,
+                    "payload": {},
+                }
+                account_map[provider_id] = account
+            else:
+                cached_cash = Decimal(str(account.get("cash_balance", 0)))
+                if (derived_cash - cached_cash).copy_abs() > Decimal("0.01"):
+                    cash_mismatch_warnings.append(
+                        (sid, provider_id, cached_cash, derived_cash)
+                    )
+                account["cash_balance"] = derived_cash
+                account["equity_value"] = positions_value
+
+            account["computed_cash_balance"] = derived_cash
+            account["computed_equity_value"] = positions_value
+            account["initial_capital"] = initial_capital
+
+        portfolio_accounts_by_strategy[sid] = list(account_map.values())
         positions_by_strategy[sid] = positions_by_provider
         trade_history_by_strategy[sid] = trade_history_by_provider
 
@@ -148,6 +186,20 @@ async def main() -> None:
 
     print(f"\n✅ Generated {len(strategies)} strategy pages + index.html + feed.html")
     print(f"   Output directory: {out_dir.absolute()}")
+
+    if cash_mismatch_warnings:
+        print("\n⚠️  Detected portfolio cash mismatches; recomputed values were used in the HTML:")
+        for sid, provider_id, cached_cash, derived_cash in cash_mismatch_warnings[:10]:
+            provider_label = provider_id or "default"
+            diff = derived_cash - cached_cash
+            print(
+                f"   - Strategy {sid} / provider {provider_label}: "
+                f"DB cash {cached_cash:,.2f} → recalculated {derived_cash:,.2f} "
+                f"(Δ {diff:,.2f})"
+            )
+        if len(cash_mismatch_warnings) > 10:
+            remaining = len(cash_mismatch_warnings) - 10
+            print(f"   …and {remaining} more discrepancies.")
 
 
 if __name__ == "__main__":
