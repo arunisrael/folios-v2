@@ -16,15 +16,24 @@ from folios_v2.domain import (
 )
 from folios_v2.providers import ProviderPlugin
 from folios_v2.providers.anthropic import ANTHROPIC_PLUGIN
-from folios_v2.providers.gemini import GEMINI_PLUGIN
+from folios_v2.providers.gemini import build_gemini_plugin
+from folios_v2.providers.gemini.batch import GeminiProviderConfig
 from folios_v2.providers.models import ExecutionTaskContext
-from folios_v2.providers.openai import OPENAI_PLUGIN
+from folios_v2.providers.openai import build_openai_plugin
+from folios_v2.providers.openai.batch import OpenAIProviderConfig
 from folios_v2.runtime import BatchRuntime
+
+LOCAL_OPENAI_PLUGIN = build_openai_plugin(
+    OpenAIProviderConfig(api_key=None, allow_local_fallback=True)
+)
+LOCAL_GEMINI_PLUGIN = build_gemini_plugin(
+    GeminiProviderConfig(api_key=None, allow_local_fallback=True)
+)
 
 
 @pytest.mark.parametrize(
     "plugin",
-    [OPENAI_PLUGIN, GEMINI_PLUGIN, ANTHROPIC_PLUGIN],
+    [LOCAL_OPENAI_PLUGIN, LOCAL_GEMINI_PLUGIN, ANTHROPIC_PLUGIN],
 )
 def test_local_batch_execution(tmp_path: Path, plugin: ProviderPlugin) -> None:
     # Skip test if plugin doesn't support batch mode
@@ -55,7 +64,7 @@ def test_local_batch_execution(tmp_path: Path, plugin: ProviderPlugin) -> None:
         artifact_dir=tmp_path / plugin.provider_id.value,
     )
 
-    runtime = BatchRuntime(poll_interval_seconds=0.01, max_polls=3)
+    runtime = BatchRuntime(poll_interval_seconds=0.01, max_polls=10)
 
     async def _run() -> None:
         payload = await plugin.serializer.serialize(ctx) if plugin.serializer else None

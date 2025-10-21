@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Awaitable, Callable, Iterable
 
 from folios_v2.domain import Order, PortfolioAccount, Position, PositionSide
 from folios_v2.domain.enums import ProviderId
 from folios_v2.domain.types import StrategyId
 from folios_v2.persistence import UnitOfWork
-
 
 PriceFetcher = Callable[[list[str]], Awaitable[dict[str, Decimal]]]
 
@@ -189,8 +188,8 @@ async def load_portfolio_snapshot(
 
 
 __all__ = [
+    "OrderSummary",
     "PortfolioSnapshot",
     "PositionSummary",
-    "OrderSummary",
     "load_portfolio_snapshot",
 ]

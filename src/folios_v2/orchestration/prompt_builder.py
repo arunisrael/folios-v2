@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import datetime
 from decimal import Decimal
-from typing import Iterable
 
 from folios_v2.domain import ExecutionMode, RiskControls, Strategy
 from folios_v2.orchestration.portfolio_snapshot import PortfolioSnapshot

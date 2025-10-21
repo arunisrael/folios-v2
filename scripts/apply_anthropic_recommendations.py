@@ -53,6 +53,11 @@ STRATEGY_MAPPING = {
     "Warren Buffett Quality Growth Strategy": "9a089867-8137-45ed-8a7f-f735f83e0190",
     "Warren Buffett Strategy": "b99a340b-f51e-46ab-9335-ce3a0a3441f3",
     "William O'Neil Strategy": "3d41ab75-db89-40b8-9d55-1ebd094c440d",
+    # Manual analysis strategies
+    "Cathie Wood Strategy": "4e31e308-adb2-4e9f-bd29-6be510d5b4f7",
+    "Charles Brandes Strategy": "42ccd1a7-e47e-4b47-aab2-9417ede4f0b3",
+    "Christopher Browne Strategy": "8b5ab2d0-d664-4e47-b437-ed25fed7cbf5",
+    "Cigar-Butt Deep Value": "68b86a90-3ac3-4253-985b-0dde7f493e11",
 }
 
 

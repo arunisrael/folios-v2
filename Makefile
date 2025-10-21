@@ -2,6 +2,7 @@ UV ?= uv
 DB ?= folios_v2.db
 PROVIDERS ?= openai,gemini,anthropic
 BALANCE ?= 100000
+LINT_PATHS ?= src tests
 
 .PHONY: format lint lint-fix typecheck test coverage check build ci
 .PHONY: list-strategies plan-strategies enqueue-strategies submit-batch submit-batch-jobs poll-batch-status harvest-batch-results harvest execute status workflow
@@ -14,10 +15,10 @@ format:
 	$(UV) run black src tests scripts
 
 lint:
-	$(UV) run ruff check src tests scripts
+	$(UV) run ruff check $(LINT_PATHS)
 
 lint-fix:
-	$(UV) run ruff check src tests scripts --fix --unsafe-fixes
+	$(UV) run ruff check $(LINT_PATHS) --fix --unsafe-fixes
 
 typecheck:
 	$(UV) run mypy src

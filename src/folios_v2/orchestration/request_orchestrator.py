@@ -21,9 +21,9 @@ from folios_v2.domain import (
     Strategy,
     TaskId,
 )
-from folios_v2.persistence import UnitOfWork
 from folios_v2.market_data import get_current_prices
 from folios_v2.orchestration.portfolio_snapshot import load_portfolio_snapshot
+from folios_v2.persistence import UnitOfWork
 from folios_v2.providers import ProviderRegistry
 from folios_v2.screeners import ScreenerError, ScreenerResult, ScreenerService
 from folios_v2.utils import ensure_utc

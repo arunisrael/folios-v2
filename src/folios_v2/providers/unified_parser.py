@@ -133,7 +133,7 @@ class UnifiedResultParser(ResultParser):
         # Batch format varies by provider, so we try common patterns
         recommendations: list[dict[str, Any]] = []
 
-        def _extend_from_payload(payload: Any) -> None:
+        def _extend_from_payload(payload: object) -> None:
             """Normalize provider payloads into recommendations lists."""
 
             if payload is None:
