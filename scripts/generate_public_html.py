@@ -69,6 +69,7 @@ async def main() -> None:
     portfolio_accounts_by_strategy: dict[str, list[dict]] = {}
     positions_by_strategy: dict[str, dict[str | None, list[dict]]] = {}
     trade_history_by_strategy: dict[str, dict[str | None, list[dict]]] = {}
+    duplicate_orders_by_strategy: dict[tuple[str, str | None], list[dict]] = {}
     cash_mismatch_warnings: list[tuple[str, str | None, Decimal, Decimal]] = []
 
     print("Processing strategies...")
@@ -95,25 +96,30 @@ async def main() -> None:
         trade_history_by_provider: dict[str | None, list[dict]] = {}
 
         for provider_id in providers:
-            pos = loader.load_positions(sid, provider_id=provider_id, status="open")
-            positions_by_provider[provider_id] = pos
-
             orders = loader.load_orders(sid, provider_id=provider_id, status="filled")
+
+            deduped_orders, removed_orders = portfolio_engine.deduplicate_orders(orders)
+            duplicate_orders_by_strategy[(sid, provider_id)] = removed_orders
             initial_capital = Decimal(str(payload.get("initial_capital_usd", 100000)))
+
             events, inventory = portfolio_engine.build_trade_history(
                 initial_capital=initial_capital,
-                orders=orders
+                orders=deduped_orders
             )
             trade_history_by_provider[provider_id] = events
 
+            positions = portfolio_engine.summarize_inventory(inventory)
+
             derived_cash = portfolio_engine.compute_cash_balance(
                 initial_capital=initial_capital,
-                orders=orders,
+                orders=deduped_orders,
             )
             positions_value = portfolio_engine.compute_positions_market_value(
-                positions=pos,
+                positions=positions,
                 prices=prices,
             )
+
+            positions_by_provider[provider_id] = positions
 
             account = account_map.get(provider_id)
             if account is None:
@@ -139,6 +145,7 @@ async def main() -> None:
             account["computed_cash_balance"] = derived_cash
             account["computed_equity_value"] = positions_value
             account["initial_capital"] = initial_capital
+            account["duplicate_order_count"] = len(removed_orders)
 
         portfolio_accounts_by_strategy[sid] = list(account_map.values())
         positions_by_strategy[sid] = positions_by_provider
@@ -183,6 +190,22 @@ async def main() -> None:
     feed_html = render_activity_feed(recent_orders, strategy_map)
     (out_dir / "feed.html").write_text(feed_html, encoding="utf-8")
     print(f"  ✓ {out_dir / 'feed.html'}")
+
+    duplicate_summary = [
+        (sid, provider_id, len(orders))
+        for (sid, provider_id), orders in duplicate_orders_by_strategy.items()
+        if orders
+    ]
+    if duplicate_summary:
+        print("\n⚠️  Removed duplicate buy orders during report generation:")
+        for sid, provider_id, count in duplicate_summary[:20]:
+            provider_label = provider_id or "default"
+            print(
+                f"   - Strategy {sid} / provider {provider_label}: "
+                f"{count} duplicate order(s) ignored"
+            )
+        if len(duplicate_summary) > 20:
+            print(f"   …and {len(duplicate_summary) - 20} more strategy/provider pairs.")
 
     print(f"\n✅ Generated {len(strategies)} strategy pages + index.html + feed.html")
     print(f"   Output directory: {out_dir.absolute()}")

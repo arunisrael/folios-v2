@@ -107,6 +107,56 @@ def test_portfolio_engine_build_trade_history() -> None:
     assert events[1]["realized_pl_delta"] == Decimal("50")  # (110-100)*5
 
 
+def test_portfolio_engine_deduplicate_orders_keeps_latest_open_lot() -> None:
+    """Ensure duplicate opening orders (long & short) collapse to latest lot."""
+    engine = PortfolioEngine()
+
+    orders = [
+        {"symbol": "AAPL", "action": "BUY", "quantity": 10, "price": 100, "placed_at": "2025-10-01 10:00:00"},
+        {"symbol": "AAPL", "action": "BUY", "quantity": 12, "price": 102, "placed_at": "2025-10-02 10:00:00"},
+        {"symbol": "TSLA", "action": "SELL_SHORT", "quantity": 4, "price": 250, "placed_at": "2025-10-02 09:00:00"},
+        {"symbol": "TSLA", "action": "SELL_SHORT", "quantity": 5, "price": 255, "placed_at": "2025-10-03 09:00:00"},
+        {"symbol": "AAPL", "action": "SELL", "quantity": 5, "price": 105, "placed_at": "2025-10-04 10:00:00"},
+    ]
+
+    deduped, removed = engine.deduplicate_orders(orders)
+
+    assert len(deduped) == 3
+    assert deduped[0]["quantity"] == 12  # Latest BUY retained
+    assert deduped[1]["quantity"] == 5   # Latest SELL_SHORT retained
+    assert len(removed) == 2
+    removed_quantities = sorted(item["quantity"] for item in removed)
+    assert removed_quantities == [4, 10]
+
+
+def test_portfolio_engine_summarize_inventory() -> None:
+    """Summarize inventory lots into aggregated positions."""
+    engine = PortfolioEngine()
+
+    inventory = {
+        "AAPL": [
+            (Decimal("5"), Decimal("100"), "long", "2025-10-01 10:00:00"),
+            (Decimal("3"), Decimal("110"), "long", "2025-10-02 10:00:00"),
+        ],
+        "TSLA": [
+            (Decimal("4"), Decimal("250"), "short", "2025-10-03 09:00:00"),
+        ],
+    }
+
+    positions = engine.summarize_inventory(inventory)
+
+    assert len(positions) == 2
+    longs = next(p for p in positions if p["side"] == "long")
+    shorts = next(p for p in positions if p["side"] == "short")
+    assert longs["symbol"] == "AAPL"
+    assert longs["quantity"] == Decimal("8")
+    # Weighted average price = (5*100 + 3*110)/8 = 103.75
+    assert longs["avg_entry_price"] == Decimal("103.75")
+    assert shorts["symbol"] == "TSLA"
+    assert shorts["quantity"] == Decimal("4")
+    assert shorts["avg_entry_price"] == Decimal("250")
+
+
 def test_provider_names_mapping() -> None:
     """Test provider name constants."""
     assert PROVIDER_NAMES["openai"] == "OpenAI"

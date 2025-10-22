@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beaten-Down Leaders Strategy</title>
+    <style>
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+        margin: 24px;
+    }
+    h1, h2, h3 {
+        margin: 0.8em 0 0.4em;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0 24px;
+    }
+    th, td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
+        text-align: left;
+    }
+    th {
+        background: #f9fafb;
+    }
+    tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+    .muted {
+        color: #6b7280;
+    }
+    .right {
+        text-align: right;
+    }
+    .small {
+        font-size: 0.9em;
+    }
+    .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+    }
+    pre {
+        white-space: pre-wrap;
+        background: #f9fafb;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+    }
+    a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    .positive {
+        color: #22863a;
+    }
+    .negative {
+        color: #d73a49;
+    }
+    details {
+        margin: 16px 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        background: #f9fafb;
+    }
+    details summary {
+        cursor: pointer;
+        padding: 12px 16px;
+        font-weight: 600;
+        color: #374151;
+        user-select: none;
+        list-style: none;
+    }
+    details summary::-webkit-details-marker {
+        display: none;
+    }
+    details summary::before {
+        content: '▶';
+        display: inline-block;
+        margin-right: 8px;
+        transition: transform 0.2s;
+        font-size: 0.8em;
+    }
+    details[open] summary::before {
+        transform: rotate(90deg);
+    }
+    details summary:hover {
+        background: #f3f4f6;
+    }
+    details[open] summary {
+        border-bottom: 1px solid #e5e7eb;
+    }
+    details .details-content {
+        padding: 16px;
+        background: #ffffff;
+    }
+    
+    </style>
+</head>
+<body>
+    
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    <h1>Beaten-Down Leaders Strategy</h1>
+    <p class="muted small">Strategy ID: 0f4bf47a-e63c-40d7-8138-e8a5395f5331</p>
+
+    
+    <details>
+        <summary>Strategy Prompt</summary>
+        <div class="details-content">
+            <pre>You are an expert growth equity analyst specializing in the &quot;Beaten-Down Leaders Strategy&quot;.
+
+STRATEGY OVERVIEW:
+Focus on high-quality companies that were market leaders and trading at premium valuations within the past 3 years, but have since fallen 30%+ due to temporary headwinds, not permanent business model deterioration. The strategy exploits mean-reversion opportunities in former winners experiencing fixable problems.
+
+KEY INVESTMENT RATIONALE:
+Quality companies with strong competitive positions rarely lose them overnight. When former leaders sell off sharply, the market often overreacts to short-term issues while ignoring long-term competitive advantages. Buying these fallen leaders at discounted valuations offers asymmetric risk/reward.
+
+ANALYSIS REQUIREMENTS:
+1. **Former Leadership Criteria**: Identify companies that were market leaders
+   - Top 20% of market by market cap within last 3 years (prefer top 10%)
+   - Former high-growth companies (20%+ revenue growth in at least 2 of last 5 years)
+   - Previously traded at premium valuations (P/S &gt; 5 or P/E &gt; 25)
+   - Industry category leader or top 3 market share
+   - Widely held by institutional investors (&gt;70% institutional ownership)
+
+2. **Drawdown Assessment**: Ensure meaningful decline creating opportunity
+   - Current price down 30-70% from 52-week or all-time highs (prefer 40-60%)
+   - Decline occurred over 6-18 months (not single-day crash or 3+ year decline)
+   - Stock underperforming sector and market indices
+   - Valuation compression (multiple de-rating, not just earnings decline)
+
+3. **Business Integrity Check**: Distinguish temporary vs permanent impairment
+   - **Temporary (BUY)**: Product delays, supply chain issues, temporary margin pressure, regulatory overhang, macro headwinds, management transition, competitive pricing pressure
+   - **Permanent (AVOID)**: Obsolete business model, secular decline, loss of key customers (&gt;30% revenue), accounting fraud, fundamental technology disruption, irreversible market share loss
+   - Revenue still growing or stable (not declining &gt;10% YoY)
+   - Gross margins intact within 5% of historical average
+   - Customer retention/growth metrics still healthy
+
+4. **Path to Recovery**: Identify clear catalysts for return to favor
+   - New product launches or feature releases scheduled
+   - Cost restructuring or margin improvement plans announced
+   - Management changes or activist involvement
+   - Macro headwinds showing signs of easing
+   - Oversold technicals suggesting capitulation
+   - Analyst sentiment bottoming (target price downgrades slowing)
+
+5. **Financial Strength**: Ensure company can survive rough patch
+   - Positive free cash flow or clear path to profitability
+   - Debt-to-Equity &lt; 1.5 (prefer &lt; 1.0)
+   - Cash runway &gt; 2 years at current burn rate
+   - No imminent refinancing risk or debt covenant issues
+   - Sufficient liquidity to invest in recovery
+
+6. **Competitive Position Intact**: Verify moat still exists
+   - Market share stable or growing (not declining &gt;5% YoY)
+   - Customer satisfaction scores/NPS still strong
+   - R&amp;D spending maintained or increased
+   - Key talent retention (low executive turnover)
+   - Network effects, switching costs, or scale advantages still present
+
+RESEARCH PROCESS:
+1. **Screen for Fallen Leaders**: Identify stocks down 30%+ that were previously in top market cap quintile
+2. **Diagnose the Problem**: Understand what caused the decline (temporary vs permanent)
+3. **Assess Business Quality**: Verify competitive moat remains intact
+4. **Identify Catalysts**: Determine what will drive recovery
+5. **Valuation Check**: Ensure risk/reward is attractive at current prices
+
+RECOMMENDATION FORMAT:
+For each recommended stock, provide:
+- Ticker symbol and company name
+- Current price vs 52-week/all-time high (show % decline)
+- Investment thesis: former leadership + temporary problem + intact moat + recovery catalyst
+- Root cause analysis: why the stock declined and why it&#x27;s temporary
+- Recovery timeline and catalysts
+- Key metrics: revenue growth, margin trends, market share, valuation
+- Downside protection: what could go wrong
+- Position sizing based on conviction and volatility
+
+IDEAL CANDIDATE PROFILE:
+- Former growth leader down 40-60% from highs
+- Temporary problem (macro, execution, sentiment) not secular decline
+- Still growing revenue 5-15% (down from 20%+ previously)
+- Profitable or FCF positive
+- Management addressing issues with clear turnaround plan
+- Valuation compressed to reasonable levels (P/S 2-4 vs previous 8-12)
+- 12-24 month recovery timeline visible
+
+MARKET CONTEXT AWARENESS:
+- Bear markets: More opportunities as quality stocks get indiscriminately sold
+- Sector rotations: Leaders in out-of-favor sectors provide best opportunities
+- Rate cycles: Former high-growth stocks especially beaten down when rates rise
+- Earnings season: Look for stocks where bad news is fully priced in
+
+RISK CONSIDERATIONS:
+- Falling knife risk (stock continues declining further)
+- Value trap risk (problems were permanent, not temporary)
+- Longer recovery timeline than expected
+- Multiple de-rating persists despite fundamentals improving
+- New competition emerges during weakness period
+- Macro environment worsens, prolonging recovery
+
+Remember: &quot;Leaders lead again.&quot; Companies that achieved market leadership have proven execution ability and competitive advantages. When former winners are on sale due to fixable problems, the risk/reward is often compelling. The key is distinguishing temporary setbacks from permanent impairment.
+- Stop loss limit: 18%
+- Maximum leverage: 1x
+
+RISK PARAMETERS:
+- Maximum position size: 8% of portfolio
+- Maximum total exposure: 95%</pre>
+        </div>
+    </details>
+    
+
+    <h2>Provider Portfolios</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th class="right">Portfolio Value</th>
+          <th class="right">Return</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="pill">anthropic</span></td><td class="right">$100,517.61</td><td class="right">0.52%</td><td class="small">2025-10-21 04:27 UTC</td></tr><tr><td><span class="pill">gemini</span></td><td class="right">$100,000.00</td><td class="right">0.00%</td><td class="small">2025-10-22 05:03 UTC</td></tr><tr><td><span class="pill">openai</span></td><td class="right">$100,000.00</td><td class="right">0.00%</td><td class="small">2025-10-22 05:03 UTC</td></tr>
+      </tbody>
+    </table>
+
+    
+        <h3>Positions — Anthropic (updated 2025-10-21 04:27 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$85,000.44</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>DIS</td>
+                <td>long</td>
+                <td>2025-10-14</td>
+                <td>-</td>
+                <td class="right">45.3400</td>
+                <td class="right">$110.27</td>
+                <td class="right">$114.30</td>
+                <td class="right">$5,182.36</td>
+                <td class="right positive">$182.72</td>
+            </tr>
+            
+            <tr>
+                <td>PYPL</td>
+                <td>long</td>
+                <td>2025-10-14</td>
+                <td>-</td>
+                <td class="right">72.6100</td>
+                <td class="right">$68.86</td>
+                <td class="right">$70.05</td>
+                <td class="right">$5,086.33</td>
+                <td class="right positive">$86.41</td>
+            </tr>
+            
+            <tr>
+                <td>TDOC</td>
+                <td>long</td>
+                <td>2025-10-14</td>
+                <td>-</td>
+                <td class="right">606.0600</td>
+                <td class="right">$8.25</td>
+                <td class="right">$8.66</td>
+                <td class="right">$5,248.48</td>
+                <td class="right positive">$248.48</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$15,517.17</td></tr>
+                <tr><td>Cash</td><td class="right">$85,000.44</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$100,517.61</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$100,517.61</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — Anthropic</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-14 04:35:37</td>
+                <td>BUY</td>
+                <td>PYPL</td>
+                <td class="right">72.6100</td>
+                <td class="right">$68.86</td>
+                <td class="right">$-4,999.92</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-14 04:35:37</td>
+                <td>BUY</td>
+                <td>DIS</td>
+                <td class="right">45.3400</td>
+                <td class="right">$110.27</td>
+                <td class="right">$-4,999.64</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-14 04:35:38</td>
+                <td>BUY</td>
+                <td>TDOC</td>
+                <td class="right">606.0600</td>
+                <td class="right">$8.25</td>
+                <td class="right">$-4,999.99</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+        <h3>Positions — Gemini (updated 2025-10-22 05:03 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$77,889.60</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>ADBE</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">21.0800</td>
+                <td class="right">$357.55</td>
+                <td class="right">$357.55</td>
+                <td class="right">$7,537.15</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>PANW</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">37.5000</td>
+                <td class="right">$214.40</td>
+                <td class="right">$214.40</td>
+                <td class="right">$8,040.00</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>SHOP</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">40.1700</td>
+                <td class="right">$162.64</td>
+                <td class="right">$162.64</td>
+                <td class="right">$6,533.25</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$22,110.40</td></tr>
+                <tr><td>Cash</td><td class="right">$77,889.60</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$100,000.00</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$100,000.00</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — Gemini</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-22 05:03:00</td>
+                <td>BUY</td>
+                <td>PANW</td>
+                <td class="right">37.5000</td>
+                <td class="right">$214.40</td>
+                <td class="right">$-8,040.00</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:03:00</td>
+                <td>BUY</td>
+                <td>ADBE</td>
+                <td class="right">21.0800</td>
+                <td class="right">$357.55</td>
+                <td class="right">$-7,537.15</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:03:01</td>
+                <td>BUY</td>
+                <td>SHOP</td>
+                <td class="right">40.1700</td>
+                <td class="right">$162.64</td>
+                <td class="right">$-6,533.25</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+        <h3>Positions — OpenAI (updated 2025-10-22 05:03 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$79,041.68</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>AMD</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">30.0700</td>
+                <td class="right">$238.03</td>
+                <td class="right">$238.03</td>
+                <td class="right">$7,157.56</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>NFLX</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">5.3500</td>
+                <td class="right">$1,241.35</td>
+                <td class="right">$1,241.35</td>
+                <td class="right">$6,641.22</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>TSM</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">24.3100</td>
+                <td class="right">$294.51</td>
+                <td class="right">$294.51</td>
+                <td class="right">$7,159.54</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$20,958.32</td></tr>
+                <tr><td>Cash</td><td class="right">$79,041.68</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$100,000.00</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$100,000.00</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — OpenAI</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-22 05:03:05</td>
+                <td>BUY</td>
+                <td>TSM</td>
+                <td class="right">24.3100</td>
+                <td class="right">$294.51</td>
+                <td class="right">$-7,159.54</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:03:05</td>
+                <td>BUY</td>
+                <td>NFLX</td>
+                <td class="right">5.3500</td>
+                <td class="right">$1,241.35</td>
+                <td class="right">$-6,641.22</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:03:05</td>
+                <td>BUY</td>
+                <td>AMD</td>
+                <td class="right">30.0700</td>
+                <td class="right">$238.03</td>
+                <td class="right">$-7,157.56</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    
+</body>
+</html>

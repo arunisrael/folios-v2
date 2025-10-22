@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>David Dreman Strategy</title>
+    <style>
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+        margin: 24px;
+    }
+    h1, h2, h3 {
+        margin: 0.8em 0 0.4em;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0 24px;
+    }
+    th, td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
+        text-align: left;
+    }
+    th {
+        background: #f9fafb;
+    }
+    tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+    .muted {
+        color: #6b7280;
+    }
+    .right {
+        text-align: right;
+    }
+    .small {
+        font-size: 0.9em;
+    }
+    .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+    }
+    pre {
+        white-space: pre-wrap;
+        background: #f9fafb;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+    }
+    a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    .positive {
+        color: #22863a;
+    }
+    .negative {
+        color: #d73a49;
+    }
+    details {
+        margin: 16px 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        background: #f9fafb;
+    }
+    details summary {
+        cursor: pointer;
+        padding: 12px 16px;
+        font-weight: 600;
+        color: #374151;
+        user-select: none;
+        list-style: none;
+    }
+    details summary::-webkit-details-marker {
+        display: none;
+    }
+    details summary::before {
+        content: '▶';
+        display: inline-block;
+        margin-right: 8px;
+        transition: transform 0.2s;
+        font-size: 0.8em;
+    }
+    details[open] summary::before {
+        transform: rotate(90deg);
+    }
+    details summary:hover {
+        background: #f3f4f6;
+    }
+    details[open] summary {
+        border-bottom: 1px solid #e5e7eb;
+    }
+    details .details-content {
+        padding: 16px;
+        background: #ffffff;
+    }
+    
+    </style>
+</head>
+<body>
+    
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    <h1>David Dreman Strategy</h1>
+    <p class="muted small">Strategy ID: 1dff269f-412a-4c74-bca1-e9d3ab213d6e</p>
+
+    
+    <details>
+        <summary>Strategy Prompt</summary>
+        <div class="details-content">
+            <pre>You are an expert value investor analyzing stocks for the &quot;David Dreman Strategy&quot; strategy.
+
+STRATEGY OVERVIEW:
+Contrarian approach buying unpopular low P/E stocks believing human psychology causes market inefficiencies. Psychological and contrarian investing exploiting behavioral biases and market overreactions.
+
+KEY INVESTMENT RATIONALE:
+Focus on systematic application of strategy principles for consistent results.
+
+ANALYSIS REQUIREMENTS:
+1. **Fundamental Analysis**: Focus on intrinsic value vs market price
+   - P/E ratio (prefer &lt; 15 for established companies)
+   - P/B ratio (look for &lt; 1.5, ideally &lt; 1.0)
+   - Price-to-Free-Cash-Flow (prefer &lt; 12)
+   - Debt-to-Equity ratio (prefer &lt; 0.5)
+   - Return on Equity (prefer &gt; 10%)
+   - Current ratio (prefer &gt; 1.5)
+
+2. **Value Indicators**: Look for signs of temporary undervaluation
+   - Recent price declines (20%+ from 52-week highs)
+   - Market overreaction to short-term issues
+   - Strong fundamentals despite poor recent performance
+   - Asset backing (tangible book value support)
+
+3. **Quality Assessment**: Ensure business quality despite low valuation
+   - Sustainable competitive advantages
+   - Consistent earnings history (5+ years)
+   - Strong management track record
+   - Growing or stable market share
+
+
+RESEARCH PROCESS:
+1. **Stock Screening**: Apply quantitative filters based on strategy criteria
+2. **Fundamental Research**: Deep-dive analysis of selected candidates
+3. **Risk Assessment**: Evaluate downside risks and position sizing
+4. **Entry Timing**: Identify optimal entry points and conditions
+5. **Exit Strategy**: Define profit targets and stop-loss levels
+
+RECOMMENDATION FORMAT:
+For each recommended stock, provide:
+- Ticker symbol and company name
+- Current price and target price
+- Investment thesis (2-3 sentences)
+- Key supporting metrics
+- Risk factors and mitigation
+- Position sizing recommendation
+- Entry and exit criteria
+
+MARKET CONTEXT AWARENESS:
+- Consider current market regime and conditions
+- Assess sector-specific trends and dynamics
+- Factor in macroeconomic environment
+- Account for seasonal and cyclical patterns
+- Monitor regulatory and policy impacts
+
+RISK CONSIDERATIONS:
+- Value traps (permanently declining businesses)
+- Catalyst timing uncertainty
+- Market sentiment persistence
+- Sector-wide disruption risks
+
+Remember: &quot;Price is what you pay, value is what you get.&quot; Focus on businesses trading below their intrinsic worth with strong fundamentals and clear paths to value recognition.
+- Stop loss limit: 15%
+- Maximum leverage: 1x
+
+RISK PARAMETERS:
+- Maximum position size: 10% of portfolio
+- Maximum total exposure: 95%</pre>
+        </div>
+    </details>
+    
+
+    <h2>Provider Portfolios</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th class="right">Portfolio Value</th>
+          <th class="right">Return</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="pill">anthropic</span></td><td class="right">$101,211.02</td><td class="right">1.21%</td><td class="small">2025-10-21 04:27 UTC</td></tr>
+      </tbody>
+    </table>
+
+    
+        <h3>Positions — Anthropic (updated 2025-10-21 04:27 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$68,001.80</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>CAT</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">11.3800</td>
+                <td class="right">$527.08</td>
+                <td class="right">$524.65</td>
+                <td class="right">$5,970.52</td>
+                <td class="right negative">$-27.65</td>
+            </tr>
+            
+            <tr>
+                <td>CMCSA</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">220.0400</td>
+                <td class="right">$29.54</td>
+                <td class="right">$29.97</td>
+                <td class="right">$6,594.60</td>
+                <td class="right positive">$94.62</td>
+            </tr>
+            
+            <tr>
+                <td>CVS</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">72.7100</td>
+                <td class="right">$82.52</td>
+                <td class="right">$83.04</td>
+                <td class="right">$6,037.84</td>
+                <td class="right positive">$37.81</td>
+            </tr>
+            
+            <tr>
+                <td>HAL</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">291.8700</td>
+                <td class="right">$22.27</td>
+                <td class="right">$25.24</td>
+                <td class="right">$7,366.80</td>
+                <td class="right positive">$866.85</td>
+            </tr>
+            
+            <tr>
+                <td>KEY</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">412.7400</td>
+                <td class="right">$16.96</td>
+                <td class="right">$17.54</td>
+                <td class="right">$7,239.46</td>
+                <td class="right positive">$239.39</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$33,209.21</td></tr>
+                <tr><td>Cash</td><td class="right">$68,001.80</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$101,211.02</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$101,211.02</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — Anthropic</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-20 05:29:08</td>
+                <td>BUY</td>
+                <td>KEY</td>
+                <td class="right">412.7400</td>
+                <td class="right">$16.96</td>
+                <td class="right">$-7,000.07</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-20 05:29:08</td>
+                <td>BUY</td>
+                <td>HAL</td>
+                <td class="right">291.8700</td>
+                <td class="right">$22.27</td>
+                <td class="right">$-6,499.95</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-20 05:29:08</td>
+                <td>BUY</td>
+                <td>CMCSA</td>
+                <td class="right">220.0400</td>
+                <td class="right">$29.54</td>
+                <td class="right">$-6,499.98</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-20 05:29:08</td>
+                <td>BUY</td>
+                <td>CVS</td>
+                <td class="right">72.7100</td>
+                <td class="right">$82.52</td>
+                <td class="right">$-6,000.03</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-20 05:29:09</td>
+                <td>BUY</td>
+                <td>CAT</td>
+                <td class="right">11.3800</td>
+                <td class="right">$527.08</td>
+                <td class="right">$-5,998.17</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    
+</body>
+</html>

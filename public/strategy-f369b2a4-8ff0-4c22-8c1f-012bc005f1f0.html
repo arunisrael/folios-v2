@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jean-Marie Eveillard Strategy</title>
+    <style>
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+        margin: 24px;
+    }
+    h1, h2, h3 {
+        margin: 0.8em 0 0.4em;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 12px 0 24px;
+    }
+    th, td {
+        border: 1px solid #e5e7eb;
+        padding: 8px 10px;
+        text-align: left;
+    }
+    th {
+        background: #f9fafb;
+    }
+    tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+    .muted {
+        color: #6b7280;
+    }
+    .right {
+        text-align: right;
+    }
+    .small {
+        font-size: 0.9em;
+    }
+    .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: #eef2ff;
+        color: #4338ca;
+    }
+    pre {
+        white-space: pre-wrap;
+        background: #f9fafb;
+        padding: 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+    }
+    a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
+    .positive {
+        color: #22863a;
+    }
+    .negative {
+        color: #d73a49;
+    }
+    details {
+        margin: 16px 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        background: #f9fafb;
+    }
+    details summary {
+        cursor: pointer;
+        padding: 12px 16px;
+        font-weight: 600;
+        color: #374151;
+        user-select: none;
+        list-style: none;
+    }
+    details summary::-webkit-details-marker {
+        display: none;
+    }
+    details summary::before {
+        content: '▶';
+        display: inline-block;
+        margin-right: 8px;
+        transition: transform 0.2s;
+        font-size: 0.8em;
+    }
+    details[open] summary::before {
+        transform: rotate(90deg);
+    }
+    details summary:hover {
+        background: #f3f4f6;
+    }
+    details[open] summary {
+        border-bottom: 1px solid #e5e7eb;
+    }
+    details .details-content {
+        padding: 16px;
+        background: #ffffff;
+    }
+    
+    </style>
+</head>
+<body>
+    
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    <h1>Jean-Marie Eveillard Strategy</h1>
+    <p class="muted small">Strategy ID: f369b2a4-8ff0-4c22-8c1f-012bc005f1f0</p>
+
+    
+    <details>
+        <summary>Strategy Prompt</summary>
+        <div class="details-content">
+            <pre>You are an expert value investor analyzing stocks for the &quot;Jean-Marie Eveillard Strategy&quot; strategy.
+
+STRATEGY OVERVIEW:
+Global value investing applying Graham and Buffett principles internationally. Capital preservation focus avoiding leverage with strict margin of safety. Truly global diversification with conservative approach.
+
+KEY INVESTMENT RATIONALE:
+Focus on systematic application of strategy principles for consistent results.
+
+ANALYSIS REQUIREMENTS:
+1. **Fundamental Analysis**: Focus on intrinsic value vs market price
+   - P/E ratio (prefer &lt; 15 for established companies)
+   - P/B ratio (look for &lt; 1.5, ideally &lt; 1.0)
+   - Price-to-Free-Cash-Flow (prefer &lt; 12)
+   - Debt-to-Equity ratio (prefer &lt; 0.5)
+   - Return on Equity (prefer &gt; 10%)
+   - Current ratio (prefer &gt; 1.5)
+
+2. **Value Indicators**: Look for signs of temporary undervaluation
+   - Recent price declines (20%+ from 52-week highs)
+   - Market overreaction to short-term issues
+   - Strong fundamentals despite poor recent performance
+   - Asset backing (tangible book value support)
+
+3. **Quality Assessment**: Ensure business quality despite low valuation
+   - Sustainable competitive advantages
+   - Consistent earnings history (5+ years)
+   - Strong management track record
+   - Growing or stable market share
+
+
+RESEARCH PROCESS:
+1. **Stock Screening**: Apply quantitative filters based on strategy criteria
+2. **Fundamental Research**: Deep-dive analysis of selected candidates
+3. **Risk Assessment**: Evaluate downside risks and position sizing
+4. **Entry Timing**: Identify optimal entry points and conditions
+5. **Exit Strategy**: Define profit targets and stop-loss levels
+
+RECOMMENDATION FORMAT:
+For each recommended stock, provide:
+- Ticker symbol and company name
+- Current price and target price
+- Investment thesis (2-3 sentences)
+- Key supporting metrics
+- Risk factors and mitigation
+- Position sizing recommendation
+- Entry and exit criteria
+
+MARKET CONTEXT AWARENESS:
+- Consider current market regime and conditions
+- Assess sector-specific trends and dynamics
+- Factor in macroeconomic environment
+- Account for seasonal and cyclical patterns
+- Monitor regulatory and policy impacts
+
+RISK CONSIDERATIONS:
+- Value traps (permanently declining businesses)
+- Catalyst timing uncertainty
+- Market sentiment persistence
+- Sector-wide disruption risks
+
+Remember: &quot;Price is what you pay, value is what you get.&quot; Focus on businesses trading below their intrinsic worth with strong fundamentals and clear paths to value recognition.
+- Stop loss limit: 18%
+- Maximum leverage: 1x
+
+RISK PARAMETERS:
+- Maximum position size: 13% of portfolio
+- Maximum total exposure: 100%</pre>
+        </div>
+    </details>
+    
+
+    <h2>Provider Portfolios</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Provider</th>
+          <th class="right">Portfolio Value</th>
+          <th class="right">Return</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="pill">claude</span></td><td class="right">$100,247.79</td><td class="right">0.25%</td><td class="small">2025-10-21 04:27 UTC</td></tr><tr><td><span class="pill">custom</span></td><td class="right">$100,000.00</td><td class="right">0.00%</td><td class="small">2025-10-22 05:59 UTC</td></tr><tr><td><span class="pill">gemini</span></td><td class="right">$100,286.45</td><td class="right">0.29%</td><td class="small">2025-10-21 04:27 UTC</td></tr><tr><td><span class="pill">openai</span></td><td class="right">$99,784.51</td><td class="right">-0.22%</td><td class="small">2025-10-21 04:27 UTC</td></tr>
+      </tbody>
+    </table>
+
+    
+        <h3>Positions — claude (updated 2025-10-21 04:27 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$51,999.88</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>BHP</td>
+                <td>long</td>
+                <td>2025-10-16</td>
+                <td>-</td>
+                <td class="right">176.4000</td>
+                <td class="right">$56.69</td>
+                <td class="right">$55.97</td>
+                <td class="right">$9,873.11</td>
+                <td class="right negative">$-127.01</td>
+            </tr>
+            
+            <tr>
+                <td>CVX</td>
+                <td>long</td>
+                <td>2025-10-16</td>
+                <td>-</td>
+                <td class="right">65.7400</td>
+                <td class="right">$152.11</td>
+                <td class="right">$153.79</td>
+                <td class="right">$10,110.15</td>
+                <td class="right positive">$110.44</td>
+            </tr>
+            
+            <tr>
+                <td>HSBC</td>
+                <td>long</td>
+                <td>2025-10-16</td>
+                <td>-</td>
+                <td class="right">120.4600</td>
+                <td class="right">$66.41</td>
+                <td class="right">$66.03</td>
+                <td class="right">$7,953.97</td>
+                <td class="right negative">$-45.77</td>
+            </tr>
+            
+            <tr>
+                <td>UL</td>
+                <td>long</td>
+                <td>2025-10-16</td>
+                <td>-</td>
+                <td class="right">131.4100</td>
+                <td class="right">$60.88</td>
+                <td class="right">$62.34</td>
+                <td class="right">$8,192.10</td>
+                <td class="right positive">$191.86</td>
+            </tr>
+            
+            <tr>
+                <td>XOM</td>
+                <td>long</td>
+                <td>2025-10-16</td>
+                <td>-</td>
+                <td class="right">107.5200</td>
+                <td class="right">$111.61</td>
+                <td class="right">$112.71</td>
+                <td class="right">$12,118.58</td>
+                <td class="right positive">$118.27</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$48,247.91</td></tr>
+                <tr><td>Cash</td><td class="right">$51,999.88</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$100,247.79</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$100,247.79</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — claude</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-16 04:43:01</td>
+                <td>BUY</td>
+                <td>XOM</td>
+                <td class="right">107.5200</td>
+                <td class="right">$111.61</td>
+                <td class="right">$-12,000.31</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-16 04:43:01</td>
+                <td>BUY</td>
+                <td>CVX</td>
+                <td class="right">65.7400</td>
+                <td class="right">$152.11</td>
+                <td class="right">$-9,999.71</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-16 04:43:01</td>
+                <td>BUY</td>
+                <td>BHP</td>
+                <td class="right">176.4000</td>
+                <td class="right">$56.69</td>
+                <td class="right">$-10,000.12</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-16 04:43:01</td>
+                <td>BUY</td>
+                <td>UL</td>
+                <td class="right">131.4100</td>
+                <td class="right">$60.88</td>
+                <td class="right">$-8,000.24</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-16 04:43:01</td>
+                <td>BUY</td>
+                <td>HSBC</td>
+                <td class="right">120.4600</td>
+                <td class="right">$66.41</td>
+                <td class="right">$-7,999.75</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+        <h3>Positions — custom (updated 2025-10-22 05:59 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$63,996.78</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>ASML</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">7.3200</td>
+                <td class="right">$1,025.02</td>
+                <td class="right">$1,025.02</td>
+                <td class="right">$7,503.15</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>BABA</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">39.0000</td>
+                <td class="right">$166.67</td>
+                <td class="right">$166.67</td>
+                <td class="right">$6,500.13</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>NVO</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">146.0400</td>
+                <td class="right">$54.78</td>
+                <td class="right">$54.78</td>
+                <td class="right">$8,000.07</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>SAP</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">24.9600</td>
+                <td class="right">$280.46</td>
+                <td class="right">$280.46</td>
+                <td class="right">$7,000.28</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            <tr>
+                <td>TM</td>
+                <td>long</td>
+                <td>2025-10-22</td>
+                <td>-</td>
+                <td class="right">34.6600</td>
+                <td class="right">$201.95</td>
+                <td class="right">$201.95</td>
+                <td class="right">$6,999.59</td>
+                <td class="right positive">$0.00</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$36,003.22</td></tr>
+                <tr><td>Cash</td><td class="right">$63,996.78</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$100,000.00</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$100,000.00</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — custom</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-22 05:59:25</td>
+                <td>BUY</td>
+                <td>ASML</td>
+                <td class="right">7.3200</td>
+                <td class="right">$1,025.02</td>
+                <td class="right">$-7,503.15</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:59:25</td>
+                <td>BUY</td>
+                <td>NVO</td>
+                <td class="right">146.0400</td>
+                <td class="right">$54.78</td>
+                <td class="right">$-8,000.07</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:59:25</td>
+                <td>BUY</td>
+                <td>TM</td>
+                <td class="right">34.6600</td>
+                <td class="right">$201.95</td>
+                <td class="right">$-6,999.59</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:59:25</td>
+                <td>BUY</td>
+                <td>BABA</td>
+                <td class="right">39.0000</td>
+                <td class="right">$166.67</td>
+                <td class="right">$-6,500.13</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-22 05:59:26</td>
+                <td>BUY</td>
+                <td>SAP</td>
+                <td class="right">24.9600</td>
+                <td class="right">$280.46</td>
+                <td class="right">$-7,000.28</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+        <h3>Positions — Gemini (updated 2025-10-21 04:27 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$85,025.43</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>BCS</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">360.9600</td>
+                <td class="right">$19.36</td>
+                <td class="right">$19.49</td>
+                <td class="right">$7,035.11</td>
+                <td class="right positive">$46.92</td>
+            </tr>
+            
+            <tr>
+                <td>INTC</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">215.7900</td>
+                <td class="right">$37.01</td>
+                <td class="right">$38.12</td>
+                <td class="right">$8,225.91</td>
+                <td class="right positive">$239.53</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$15,261.02</td></tr>
+                <tr><td>Cash</td><td class="right">$85,025.43</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$100,286.45</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$100,286.45</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — Gemini</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-20 04:45:45</td>
+                <td>BUY</td>
+                <td>INTC</td>
+                <td class="right">215.7900</td>
+                <td class="right">$37.01</td>
+                <td class="right">$-7,986.39</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-20 04:45:45</td>
+                <td>BUY</td>
+                <td>BCS</td>
+                <td class="right">360.9600</td>
+                <td class="right">$19.36</td>
+                <td class="right">$-6,988.19</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+        <h3>Positions — OpenAI (updated 2025-10-21 04:27 UTC)</h3>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Side</th>
+                    <th>Opened</th>
+                    <th>Closed</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Avg Price</th>
+                    <th class="right">Market Price</th>
+                    <th class="right">Market Value</th>
+                    <th class="right">P/L</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>CASH</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">-</td>
+                <td class="right">$80,012.17</td>
+                <td class="right">-</td>
+            </tr>
+            
+                
+            <tr>
+                <td>AVGO</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">28.6100</td>
+                <td class="right">$349.33</td>
+                <td class="right">$342.66</td>
+                <td class="right">$9,803.50</td>
+                <td class="right negative">$-190.83</td>
+            </tr>
+            
+            <tr>
+                <td>LTM</td>
+                <td>long</td>
+                <td>2025-10-20</td>
+                <td>-</td>
+                <td class="right">224.1700</td>
+                <td class="right">$44.58</td>
+                <td class="right">$44.47</td>
+                <td class="right">$9,968.84</td>
+                <td class="right negative">$-24.66</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th class="right">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Positions Market Value</td><td class="right">$19,772.34</td></tr>
+                <tr><td>Cash</td><td class="right">$80,012.17</td></tr>
+                <tr><td><strong>Net (Cash + Positions)</strong></td><td class="right"><strong>$99,784.51</strong></td></tr>
+                <tr><td>Reported Provider Value</td><td class="right">$99,784.51</td></tr>
+            </tbody>
+        </table>
+        
+
+        
+        <h4>Trade History — OpenAI</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Symbol</th>
+                    <th class="right">Qty</th>
+                    <th class="right">Price</th>
+                    <th class="right">Cash Δ</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td>2025-10-20 04:45:53</td>
+                <td>BUY</td>
+                <td>LTM</td>
+                <td class="right">224.1700</td>
+                <td class="right">$44.58</td>
+                <td class="right">$-9,993.50</td>
+            </tr>
+            
+            <tr>
+                <td>2025-10-20 04:45:54</td>
+                <td>BUY</td>
+                <td>AVGO</td>
+                <td class="right">28.6100</td>
+                <td class="right">$349.33</td>
+                <td class="right">$-9,994.33</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+        
+
+    <p class="small"><a href="index.html">← Back to Leaderboard</a></p>
+    
+</body>
+</html>

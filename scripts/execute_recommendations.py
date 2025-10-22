@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -17,6 +18,7 @@ from folios_v2.domain.trading import OrderAction, OrderStatus, PositionSide
 from folios_v2.domain.types import OrderId, PositionId, StrategyId
 from folios_v2.market_data import get_current_price
 from folios_v2.utils import utc_now
+from folios_v2.utils.order_idempotency import add_order_if_new, build_order_idempotency_key
 
 app = typer.Typer(help="Execute portfolio recommendations from research requests")
 
@@ -82,7 +84,15 @@ async def _execute_buy_order(
     quantity = (allocation_amount / current_price).quantize(Decimal("0.01"))
 
     # Build metadata with rationale
-    metadata = {}
+    key = build_order_idempotency_key(
+        strategy_id,
+        provider_id,
+        symbol,
+        OrderAction.BUY,
+        quantity,
+        current_price,
+    )
+    metadata = {"idempotency_key": key}
     if rationale:
         metadata["rationale"] = rationale
 
@@ -131,7 +141,15 @@ async def _execute_sell_short_order(
     quantity = (allocation_amount / current_price).quantize(Decimal("0.01"))
 
     # Build metadata with rationale
-    metadata = {}
+    key = build_order_idempotency_key(
+        strategy_id,
+        provider_id,
+        symbol,
+        OrderAction.SELL_SHORT,
+        quantity,
+        current_price,
+    )
+    metadata = {"idempotency_key": key}
     if rationale:
         metadata["rationale"] = rationale
 
@@ -215,6 +233,7 @@ async def execute_request(
     # Process recommendations
     orders_created = []
     positions_created = []
+    lookback_cutoff = utc_now() - timedelta(days=7)
 
     async with container.unit_of_work_factory() as uow:
         for rec in recommendations:
@@ -255,7 +274,14 @@ async def execute_request(
                     rationale,
                 )
 
-                await uow.order_repository.add(order)
+                added = await add_order_if_new(
+                    uow.order_repository,
+                    order,
+                    lookback_cutoff=lookback_cutoff,
+                )
+                if not added:
+                    typer.echo("  Duplicate BUY detected; skipping new order/position")
+                    continue
                 await uow.position_repository.add(position)
 
                 orders_created.append(order)
@@ -289,7 +315,14 @@ async def execute_request(
                     rationale,
                 )
 
-                await uow.order_repository.add(order)
+                added = await add_order_if_new(
+                    uow.order_repository,
+                    order,
+                    lookback_cutoff=lookback_cutoff,
+                )
+                if not added:
+                    typer.echo("  Duplicate SELL_SHORT detected; skipping new order/position")
+                    continue
                 await uow.position_repository.add(position)
 
                 orders_created.append(order)
