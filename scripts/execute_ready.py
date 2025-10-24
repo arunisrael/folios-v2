@@ -29,28 +29,33 @@ async def _load_ready_requests(
 ) -> Sequence[tuple[str, str, str]]:
     container = get_container()
 
+    provider_clause = ""
+    params: dict[str, object] = {
+        "state": LifecycleState.SUCCEEDED.value,
+        "limit": limit,
+    }
+
+    if providers:
+        placeholders = ", ".join(f":p{i}" for i in range(len(providers)))
+        provider_clause = f" AND provider_id IN ({placeholders})"
+        params.update({f"p{i}": provider for i, provider in enumerate(providers)})
+
     query = text(
-        """
+        f"""
         SELECT id, strategy_id, provider_id
         FROM requests
         WHERE lifecycle_state = :state
           AND request_type = 'research'
+          {provider_clause}
         ORDER BY completed_at
         LIMIT :limit
         """
     )
 
     async with container.unit_of_work_factory() as uow:
-        cursor = await uow._session.execute(
-            query,
-            {"state": LifecycleState.SUCCEEDED.value, "limit": limit},
-        )
+        cursor = await uow._session.execute(query, params)
         rows = cursor.fetchall()
-    return [
-        (row.id, row.strategy_id, row.provider_id)
-        for row in rows
-        if not providers or row.provider_id in providers
-    ]
+    return [(row.id, row.strategy_id, row.provider_id) for row in rows]
 
 
 @app.command()
